@@ -13,7 +13,7 @@ CORS(app, resources={r"/*": {"origins": ["https://animeai-app.vercel.app", "http
 
 
 # Koneksi ke MongoDB
-client_db = MongoClient(os.getenv("MONGO_URI"))
+client_db = MongoClient(os.getenv("MONGODB_URI"))
 db = client_db.ai_chatbot  # Nama database
 chats_collection = db.chats  # Koleksi chat
 
