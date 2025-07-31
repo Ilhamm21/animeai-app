@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://animeai-app.vercel.app", "https://animeai-app.vercel.app/, animeai-app.vercel.app"], }})
+CORS(app, resources={r"/*": {"origins": ["https://animeai-app.vercel.app"]}})
+
 
 
 # Koneksi ke MongoDB
