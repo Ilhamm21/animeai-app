@@ -6,7 +6,7 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
   const [customCharacters, setCustomCharacters] = useState([]);
   const [selectedAnime, setSelectedAnime] = useState('All');
 
-  const BASE_URL = "https://animeai-app.vercel.app";
+  const BASE_URL = "https://animeai-app-production.up.railway.app";
 
   useEffect(() => {
     fetchCharacters();
