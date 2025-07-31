@@ -5,13 +5,13 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ Penting!
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://animeai-app.vercel.app"}})
-
-
+CORS(app, origins=["https://animeai-app.vercel.app"])
 
 # Koneksi ke MongoDB
 client_db = MongoClient(os.getenv("MONGODB_URI"))
