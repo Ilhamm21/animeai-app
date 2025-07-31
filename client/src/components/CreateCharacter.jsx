@@ -10,7 +10,7 @@ const CreateCharacter = ({ onCreated }) => {
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  const BASE_URL = "https://animeai-app.vercel.app/";
+  const BASE_URL = "https://animeai-app.vercel.app";
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

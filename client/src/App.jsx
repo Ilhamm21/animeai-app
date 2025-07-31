@@ -21,11 +21,11 @@ const App = () => {
   const handleCharacterSelect = (character) => {
     const isSameCharacter = activeCharacter?.name === character.name;
 
-    const BASE_URL = "https://animeai-app.vercel.app/avatars";
+    const BASE_URL = "https://animeai-app.vercel.app";
 
     const avatarUrl = character.type === 'custom'
-      ? `${BASE_URL}/${character.avatar}`
-      : `${BASE_URL}/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+      ? `/avatars/${character.avatar}`
+      : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
 
     const characterData = {
       ...character,

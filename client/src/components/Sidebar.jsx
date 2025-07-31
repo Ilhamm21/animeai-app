@@ -9,7 +9,7 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
 
   const dropdownRef = useRef();
 
-  const BASE_URL = "https://animeai-app.vercel.app/";
+  const BASE_URL = "https://animeai-app.vercel.app";
 
   useEffect(() => {
     const saved = localStorage.getItem('chat-characters');

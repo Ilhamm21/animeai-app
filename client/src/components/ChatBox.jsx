@@ -18,7 +18,7 @@ function ChatBox({ character }) {
     return id;
   };
 
-  const BASE_URL = "https://animeai-app.vercel.app/";
+  const BASE_URL = "https://animeai-app.vercel.app";
 
   const guestId = getGuestId();
 
