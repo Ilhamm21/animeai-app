@@ -18,7 +18,7 @@ function ChatBox({ character }) {
     return id;
   };
 
-  const BASE_URL = "https://animeai-app-production.up.railway.app";
+  const BASE_URL = "https://animeai-app.vercel.app/";
 
   const guestId = getGuestId();
 
