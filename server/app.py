@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "https://animeai-app.vercel.app"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "https://animeai-app.vercel.app"}})
 
 
 # Koneksi ke MongoDB
@@ -289,5 +289,6 @@ def delete_chat_history(user_id, character):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
 
