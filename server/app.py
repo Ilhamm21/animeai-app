@@ -5,13 +5,12 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # ✅ Penting!
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://animeai-app.vercel.app"])
+CORS(app, resources={r"/*": {"origins": "https://animeai-app.vercel.app"}})
+
 
 # Koneksi ke MongoDB
 client_db = MongoClient(os.getenv("MONGODB_URI"))
@@ -23,9 +22,10 @@ if not os.path.exists("./avatars"):
     os.makedirs("./avatars")
 
 # API Key untuk OpenAI
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-print("OpenAI Key Found:", bool(os.getenv("OPENAI_API_KEY")))
+client = OpenAI(
+    base_url="https://api.openai.com/v1",
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
 characters_notes = "BAWAHLAH PEMBAWAAN SEOLAH MASUK KEDALAM DUNIA ANIME/KAMU ADA LAH ORANG PENTING YANG ADA DALAM CERITA ANIME. JIKA YANG DIAJAK NGOBROL ADALAH TOKOH UTAMA JADIKAN PENGGUNA SEBAGAI SAHABAT ATAU RIVAL, JIKA YANG DIAJAK BUKAN TOKOH UTAMA JADIKAN PENGGUNA SEOLAH TOKOH UTAMA. JANGAN PERNAH KELUAR DARI KARAKTER. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH AI ATAU CHATBOT. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH PROGRAM ATAU KODE. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH MODEL AI."
 
@@ -288,7 +288,7 @@ def delete_chat_history(user_id, character):
     return jsonify({"message": f"{result.deleted_count} chat berhasil dihapus untuk karakter '{character}' dan user '{user_id}'."})
 
 
-if __name__ == "__main__":
+if __name__ == "__app__":
     port = int(os.environ.get("PORT", 5000))  # Gunakan PORT dari Railway
     app.run(debug=True, host="0.0.0.0", port=port)
 
