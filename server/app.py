@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask
 from openai import OpenAI  
 from flask_cors import CORS
 from pymongo import MongoClient
@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app, origins=["https://animeai-app.vercel.app"], supports_credentials=True)
 
 
 # Koneksi ke MongoDB
