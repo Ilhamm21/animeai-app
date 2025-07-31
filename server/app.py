@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["https://animeai-app.vercel.app"])
+CORS(app) 
 
 
 # Koneksi ke MongoDB
@@ -22,10 +22,7 @@ if not os.path.exists("./avatars"):
     os.makedirs("./avatars")
 
 # API Key untuk OpenAI
-client = OpenAI(
-    base_url="https://api.openai.com/v1",
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 print("OpenAI Key Found:", bool(os.getenv("OPENAI_API_KEY")))
 
