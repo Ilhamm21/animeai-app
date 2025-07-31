@@ -24,8 +24,8 @@ const App = () => {
     const BASE_URL = "https://animeai-app-production.up.railway.app";
 
     const avatarUrl = character.type === 'custom'
-      ? `${BASE_URL}/avatars/${character.avatar}`
-      : `${BASE_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+      ? `/avatars/${character.avatar}`
+      : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
 
     const characterData = {
       ...character,
