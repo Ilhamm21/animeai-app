@@ -11,7 +11,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-
+@app.route("/")
+def hello():
+    return "Hello from Flask + Railway!"
 
 # Koneksi ke MongoDB
 client_db = MongoClient(os.getenv("MONGODB_URI"))
