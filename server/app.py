@@ -11,6 +11,8 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+print("✅ Flask app starting...")
+
 @app.route("/")
 def hello():
     return "Hello from Flask + Railway!"
