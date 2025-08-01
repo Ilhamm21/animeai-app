@@ -115,6 +115,9 @@ Jika pengguna mencoba menanyakan karakter diluar dunia anime atau dunia anime ya
 
 """
 
+
+print("CHARACTERS:", characters.keys())
+print("CHAR REM:", characters.get("Rem"))
 # API untuk chatbot AI
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -167,6 +170,9 @@ Petunjuk:
             model="gpt-4o",
             messages=conversation_history
         )
+        
+        print("✅ RESPON OPENAI:", response)
+
 
         bot_text = response.choices[0].message.content
 
@@ -178,6 +184,12 @@ Petunjuk:
 
     except Exception as e:
         # Tangani error dan kirim pesan error ke frontend
+        return jsonify({"error": str(e)}), 500
+
+    except Exception as e:
+        import traceback
+        print("❌ ERROR TERJADI DI /chat")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
