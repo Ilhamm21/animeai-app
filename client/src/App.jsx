@@ -24,13 +24,14 @@ const App = () => {
     const BASE_URL = "https://animeai-app-production.up.railway.app";
 
     const avatarUrl = character.type === 'custom'
-      ? `/avatars/${character.avatar}`
-      : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+      ? `${BASE_URL}/avatars/${character.avatar}`
+      : `${BASE_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
 
     const characterData = {
       ...character,
       image: avatarUrl,
     };
+
 
     if (!isSameCharacter) {
       setActiveCharacter(characterData);
@@ -55,19 +56,19 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-  const avatarUrl = `${BASE_URL}/${newCharacter.avatar}`;
+    const avatarUrl = `${BASE_URL}/${newCharacter.avatar}`;
 
-  const characterWithImage = {
-    ...newCharacter,
-    image: avatarUrl,
+    const characterWithImage = {
+      ...newCharacter,
+      image: avatarUrl,
+    };
+
+    setCustomCharacters((prev) => [...prev, characterWithImage]);
+    setActiveCharacter(characterWithImage);
+    localStorage.setItem("last-character", JSON.stringify(characterWithImage));
+    localStorage.setItem("last-used", new Date().toISOString());
+    setViewMode("chat");
   };
-
-  setCustomCharacters((prev) => [...prev, characterWithImage]);
-  setActiveCharacter(characterWithImage);
-  localStorage.setItem("last-character", JSON.stringify(characterWithImage));
-  localStorage.setItem("last-used", new Date().toISOString());
-  setViewMode("chat");
-};
 
 
   const handleCharacterDeleted = (deletedName) => {

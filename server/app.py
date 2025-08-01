@@ -24,8 +24,8 @@ if not mongodb_uri:
     raise ValueError("MONGODB_URI is not set in environment variables")
 
 client_db = MongoClient(mongodb_uri)
-# db = client_db.ai_chatbot  # Nama database
-# chats_collection = db.chats  # Koleksi chat
+db = client_db.ai_chatbot  # Nama database
+chats_collection = db.chats  # Koleksi chat
 
 import os
 if not os.path.exists("./avatars"):
