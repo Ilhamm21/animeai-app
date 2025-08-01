@@ -92,12 +92,7 @@ def save_chat(user_id, character, user_input, bot_reply, bot_emotion="neutral"):
         "bot_emotion": bot_emotion,
         "created_at": datetime.utcnow(),
     }
-    chats_collection.insert_one(chat_data)  # Simpan ke database
-
-# Fungsi untuk mengambil chat history dari MongoDB
-def get_chat_history(user_id):
-    history = list(chats_collection.find({"user_id": user_id}, {"_id": 0}))
-    return history
+    chats_collection.insert_one(chat_data)
 
 # Prompt global agar karakter merasa hidup di dunia anime mereka
 prompt_global = """
@@ -127,61 +122,63 @@ def chat():
         data = request.json
         print("DATA MASUK:", data)
 
-        
+        # Ambil data dari request
         user_id = data.get("user_id", "guest")
         selected_character = data.get("character", "Rem")
         user_input = data.get("message", "")
 
+        # Cek karakter bawaan atau custom
         if selected_character in characters:
             base_prompt = characters[selected_character]
         else:
             custom_char = db.characters.find_one({"name": selected_character})
-            base_prompt = custom_char["prompt"] if custom_char else characters["Rem"]
+            if custom_char and "prompt" in custom_char:
+                base_prompt = custom_char["prompt"]
+            else:
+                base_prompt = characters.get("Rem", "")
 
-
-
+        # Gabungkan dengan prompt global
         system_prompt = f"""
-        
-        {prompt_global.strip()}
+{prompt_global.strip()}
 
-        {base_prompt.strip()}
+{base_prompt.strip()}
 
-        Petunjuk:
-        - Jangan pernah keluar dari karakter anime.
-        """
+Petunjuk:
+- Jangan pernah keluar dari karakter anime.
+"""
 
-
+        # Ambil history chat terakhir dari MongoDB (maks 5)
         chat_history = list(chats_collection.find(
             {"user_id": user_id, "character": selected_character},
             {"_id": 0, "user_message": 1, "bot_reply": 1}
         ).sort("_id", -1).limit(5))
 
+        # Susun history untuk OpenAI
         conversation_history = [{"role": "system", "content": system_prompt}]
-
         for chat in reversed(chat_history):
             conversation_history.append({"role": "user", "content": chat["user_message"]})
             conversation_history.append({"role": "assistant", "content": chat["bot_reply"]})
 
+        # Tambahkan input terbaru pengguna
         conversation_history.append({"role": "user", "content": user_input})
 
+        # Kirim ke OpenAI
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=conversation_history
         )
 
-        raw_bot_reply = response.choices[0].message.content
-        bot_text = raw_bot_reply
+        bot_text = response.choices[0].message.content
 
+        # Simpan chat ke MongoDB
         save_chat(user_id, selected_character, user_input, bot_text)
 
-        return jsonify({
-            "reply": bot_text
-        })
+        # Kirim balasan ke frontend
+        return jsonify({"reply": bot_text})
 
     except Exception as e:
+        # Tangani error dan kirim pesan error ke frontend
         return jsonify({"error": str(e)}), 500
-
-
 
 
 # API untuk membuat karakter
