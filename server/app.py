@@ -289,9 +289,11 @@ def delete_chat_history(user_id, character):
     return jsonify({"message": f"{result.deleted_count} chat berhasil dihapus untuk karakter '{character}' dan user '{user_id}'."})
 
 
-if __name__ == '__main__':
-    import os
+import os
+
+if __name__ == '__main__' and not os.environ.get("RAILWAY_ENVIRONMENT"):
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
 
 
