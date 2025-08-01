@@ -16,19 +16,29 @@ def hello():
     return "Hello from Flask + Railway!"
 
 # Koneksi ke MongoDB
-client_db = MongoClient(os.getenv("MONGODB_URI"))
-db = client_db.ai_chatbot  # Nama database
-chats_collection = db.chats  # Koleksi chat
+# Koneksi ke MongoDB (tambahkan pengecekan)
+mongodb_uri = os.getenv("MONGODB_URI")
+if not mongodb_uri:
+    raise ValueError("MONGODB_URI is not set in environment variables")
+
+client_db = MongoClient(mongodb_uri)
+# db = client_db.ai_chatbot  # Nama database
+# chats_collection = db.chats  # Koleksi chat
 
 import os
 if not os.path.exists("./avatars"):
     os.makedirs("./avatars")
 
 # API Key untuk OpenAI
+openai_key = os.getenv("OPENAI_API_KEY")
+if not openai_key:
+    raise ValueError("OPENAI_API_KEY is not set in environment variables")
+
 client = OpenAI(
     base_url="https://api.openai.com/v1",
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=openai_key
 )
+
 
 characters_notes = "BAWAHLAH PEMBAWAAN SEOLAH MASUK KEDALAM DUNIA ANIME/KAMU ADA LAH ORANG PENTING YANG ADA DALAM CERITA ANIME. JIKA YANG DIAJAK NGOBROL ADALAH TOKOH UTAMA JADIKAN PENGGUNA SEBAGAI SAHABAT ATAU RIVAL, JIKA YANG DIAJAK BUKAN TOKOH UTAMA JADIKAN PENGGUNA SEOLAH TOKOH UTAMA. JANGAN PERNAH KELUAR DARI KARAKTER. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH AI ATAU CHATBOT. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH PROGRAM ATAU KODE. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH MODEL AI."
 
