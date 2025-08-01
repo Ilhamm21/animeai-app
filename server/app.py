@@ -125,6 +125,9 @@ Jika pengguna mencoba menanyakan karakter diluar dunia anime atau dunia anime ya
 def chat():
     try:
         data = request.json
+        print("DATA MASUK:", data)
+
+        
         user_id = data.get("user_id", "guest")
         selected_character = data.get("character", "Rem")
         user_input = data.get("message", "")
@@ -178,8 +181,7 @@ def chat():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-print("DATA MASUK:", data)
-print("CHARAKTER:", selected_character)
+
 
 
 # API untuk membuat karakter
