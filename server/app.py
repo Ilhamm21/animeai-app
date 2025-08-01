@@ -156,6 +156,7 @@ Petunjuk:
             {"_id": 0, "user_message": 1, "bot_reply": 1}
         ).sort("_id", -1).limit(5))
 
+        
         # Susun history untuk OpenAI
         conversation_history = [{"role": "system", "content": system_prompt}]
         for chat in reversed(chat_history):
@@ -183,14 +184,12 @@ Petunjuk:
         return jsonify({"reply": bot_text})
 
     except Exception as e:
-        # Tangani error dan kirim pesan error ke frontend
-        return jsonify({"error": str(e)}), 500
-
-    except Exception as e:
         import traceback
         print("❌ ERROR TERJADI DI /chat")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
+    
 
 
 # API untuk membuat karakter
