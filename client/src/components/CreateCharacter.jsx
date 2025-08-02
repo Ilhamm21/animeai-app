@@ -50,16 +50,16 @@ const CreateCharacter = ({ onCreated }) => {
 
       console.log("✅ Response dari backend:", response);
 
-      const newChar = {
-        name,
-        anime: "Custom Character",
-        description: personality,
-        greeting,
-        type: "custom",
-        avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`,
-      };
+      // const newChar = {
+      //   name,
+      //   anime: "Custom Character",
+      //   description: personality,
+      //   greeting,
+      //   type: "custom",
+      //   avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`,
+      // };
 
-      onCreated(newChar);
+      // onCreated(newChar);
     } catch (err) {
   console.error("❌ Terjadi error saat create:", err);
 

@@ -72,8 +72,6 @@ const App = () => {
     setViewMode("chat");
   };
 
-
-
   const handleCharacterDeleted = (deletedName) => {
     const updated = customCharacters.filter((char) => char.name !== deletedName);
     setCustomCharacters(updated);
