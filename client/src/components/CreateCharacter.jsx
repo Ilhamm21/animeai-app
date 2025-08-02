@@ -46,12 +46,14 @@ const CreateCharacter = ({ onCreated }) => {
         },
       });
 
+      onCreated(response.data.character);
+
       console.log("✅ Response dari backend:", response);
 
       const newChar = {
         name,
         anime: "Custom Character",
-        description,
+        description: personality,
         greeting,
         type: "custom",
         avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`,

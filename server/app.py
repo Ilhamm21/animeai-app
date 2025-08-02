@@ -231,7 +231,18 @@ NOTE: Jangan pernah keluar dari karakter.
         "avatar": filename
     })
 
-    return jsonify({"message": "Karakter berhasil dibuat!"})
+    return jsonify({
+    "message": "Karakter berhasil dibuat!",
+    "character": {
+        "name": name,
+        "anime": "Custom Character",
+        "description": personality,
+        "greeting": greeting,
+        "type": "custom",
+        "avatar": filename
+    }
+}), 200
+
 
 # Ambil karakter buatan user dari database jika tidak ditemukan di karakter default
 def get_character_prompt(character_name):
