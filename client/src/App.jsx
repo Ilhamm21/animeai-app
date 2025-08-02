@@ -21,11 +21,10 @@ const App = () => {
   const handleCharacterSelect = (character) => {
     const isSameCharacter = activeCharacter?.name === character.name;
 
-    const BASE_URL = "https://animeai-app-production.up.railway.app";
-
     const avatarUrl = character.type === 'custom'
-      ? `${BASE_URL}/avatars/${character.avatar}`
-      : `${BASE_URL}/avatars/${character.name}.png`;
+  ? `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`
+  : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+    // Jika karakter yang dipilih adalah karakter yang sama, tidak perlu update
 
     const characterData = {
       ...character,
