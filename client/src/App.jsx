@@ -25,7 +25,7 @@ const App = () => {
 
     const avatarUrl = character.type === 'custom'
       ? `${BASE_URL}/avatars/${character.avatar}`
-      : `${BASE_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+      : `${BASE_URL}/avatars/${character.name}.png`;
 
     const characterData = {
       ...character,
