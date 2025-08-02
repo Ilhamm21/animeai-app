@@ -19,27 +19,31 @@ const App = () => {
   });
 
   const handleCharacterSelect = (character) => {
-    const isSameCharacter = activeCharacter?.name === character.name;
+  const isSameCharacter = activeCharacter?.name === character.name;
 
-    const avatarUrl = character.type === 'custom'
-  ? `/avatars/${character.avatar}` // Misalnya 'my_custom.png'
-  : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
-
-
-    const characterData = {
-      ...character,
-      image: avatarUrl,
-    };
-
-
-    if (!isSameCharacter) {
-      setActiveCharacter(characterData);
-      localStorage.setItem('last-character', JSON.stringify(characterData));
-      localStorage.setItem('last-used', new Date().toISOString());
-    }
-
-    setViewMode('chat');
+  const characterData = {
+    ...character,
+    image: character.image || `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`,
   };
+
+  if (!isSameCharacter) {
+    setActiveCharacter(characterData);
+    localStorage.setItem('last-character', JSON.stringify(characterData));
+    localStorage.setItem('last-used', new Date().toISOString());
+
+    // Tambahkan ke chat-characters jika belum ada
+    const existing = JSON.parse(localStorage.getItem('chat-characters')) || [];
+    const alreadyExists = existing.some(c => c.name === characterData.name);
+    if (!alreadyExists) {
+      const updated = [...existing, characterData];
+      localStorage.setItem('chat-characters', JSON.stringify(updated));
+    }
+  }
+
+  setViewMode('chat');
+};
+
+
 
   const handleClearChat = (characterName) => {
     const name = characterName || activeCharacter?.name;
@@ -55,12 +59,9 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-    const avatarUrl = `/avatars/${newCharacter.avatar}`;
-
-
     const characterWithImage = {
       ...newCharacter,
-      image: avatarUrl,
+      image: `/avatars/${newCharacter.avatar}`,
     };
 
     setCustomCharacters((prev) => [...prev, characterWithImage]);

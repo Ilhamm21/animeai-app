@@ -138,16 +138,12 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
                 >
                   <div className="flex items-center space-x-2">
                     <img
-                      src={
-                        char.type === 'custom'
-                          ? char.avatar // URL lengkap dari backend
-                          : `/avatars/${char.image}` // karakter default ambil dari public/avatars/
-                      }
+                      src={char.image}
                       alt={char.name}
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = '/avatars/default.png';
+                        e.target.src = `${process.env.PUBLIC_URL}/avatars/default.png`;
                       }}
                     />
 
