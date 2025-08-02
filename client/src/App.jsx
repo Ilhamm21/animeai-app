@@ -21,16 +21,17 @@ const App = () => {
   const handleCharacterSelect = (character) => {
     const isSameCharacter = activeCharacter?.name === character.name;
 
-    const avatarUrl = character.type === 'custom'
-  ? `/avatars/${character.avatar}` // Misalnya 'my_custom.png'
-  : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+    // Deteksi apakah ini karakter custom
+    const isCustom = character.type === 'custom';
 
+    const avatarUrl = isCustom
+      ? `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`
+      : `${process.env.PUBLIC_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
 
     const characterData = {
       ...character,
       image: avatarUrl,
     };
-
 
     if (!isSameCharacter) {
       setActiveCharacter(characterData);
@@ -40,6 +41,7 @@ const App = () => {
 
     setViewMode('chat');
   };
+
 
   const handleClearChat = (characterName) => {
     const name = characterName || activeCharacter?.name;
@@ -55,12 +57,12 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-    const avatarUrl = `/avatars/${newCharacter.avatar}`;
-
+    const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
 
     const characterWithImage = {
       ...newCharacter,
       image: avatarUrl,
+      type: 'custom', // <== Tambahkan ini penting!
     };
 
     setCustomCharacters((prev) => [...prev, characterWithImage]);
@@ -69,6 +71,7 @@ const App = () => {
     localStorage.setItem("last-used", new Date().toISOString());
     setViewMode("chat");
   };
+
 
 
   const handleCharacterDeleted = (deletedName) => {
