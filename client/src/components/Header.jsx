@@ -6,12 +6,21 @@ const Header = ({ character }) => {
   return (
     <header className="flex items-center space-x-3 border-b border-gray-800 px-6 py-3 select-none flex-shrink-0">
       <img
-        src={character.image}
+        src={
+          character.type === 'custom'
+            ? character.avatar
+            : `/avatars/${character.image}`
+        }
         alt={character.name}
         className="rounded-full"
         width="32"
         height="32"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/avatars/default.png';
+        }}
       />
+
       <div className="flex flex-col leading-tight">
         <span className="text-white font-semibold text-sm">{character.name}</span>
         {character.anime && (
