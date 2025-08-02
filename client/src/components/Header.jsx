@@ -6,7 +6,11 @@ const Header = ({ character }) => {
   return (
     <header className="flex items-center space-x-3 border-b border-gray-800 px-6 py-3 select-none flex-shrink-0">
       <img
-        src={character.image}
+        src={
+          character.image.startsWith('http')
+            ? character.image
+            : `${process.env.PUBLIC_URL}/avatars/${character.image}`
+        }
         alt={character.name}
         className="rounded-full"
         width="32"
