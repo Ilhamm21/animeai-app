@@ -18,19 +18,29 @@ const App = () => {
     return stored ? JSON.parse(stored) : [];
   });
 
+  // ✅ Fungsi untuk menghasilkan URL avatar yang benar
+  const getAvatarUrl = (character) => {
+    if (character.type === 'custom') {
+      // Jika sudah URL lengkap
+      if (character.avatar.startsWith('http')) {
+        return character.avatar;
+      }
+      // Jika hanya path dari backend
+      return `https://animeai-app-production.up.railway.app/${character.avatar}`;
+    } else {
+      // Karakter default
+      return `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+    }
+  };
+
   const handleCharacterSelect = (character) => {
     const isSameCharacter = activeCharacter?.name === character.name;
 
-    const avatarUrl = character.type === 'custom'
-  ? `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`
-  : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
-    // Jika karakter yang dipilih adalah karakter yang sama, tidak perlu update
-
+    const avatarUrl = getAvatarUrl(character);
     const characterData = {
       ...character,
       image: avatarUrl,
     };
-
 
     if (!isSameCharacter) {
       setActiveCharacter(characterData);
@@ -55,7 +65,9 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-    const avatarUrl = `${BASE_URL}/${newCharacter.avatar}`;
+    const avatarUrl = newCharacter.avatar.startsWith('http')
+      ? newCharacter.avatar
+      : `https://animeai-app-production.up.railway.app/${newCharacter.avatar}`;
 
     const characterWithImage = {
       ...newCharacter,
@@ -69,13 +81,11 @@ const App = () => {
     setViewMode("chat");
   };
 
-
   const handleCharacterDeleted = (deletedName) => {
     const updated = customCharacters.filter((char) => char.name !== deletedName);
     setCustomCharacters(updated);
     localStorage.setItem('chat-characters', JSON.stringify(updated));
 
-    // Jika karakter yang dihapus sedang aktif
     if (activeCharacter?.name === deletedName) {
       localStorage.removeItem('last-character');
       localStorage.removeItem('last-used');
@@ -83,7 +93,6 @@ const App = () => {
       setViewMode('discover');
     }
 
-    // Hapus histori chat-nya juga
     localStorage.removeItem(`chat-history-${deletedName}`);
   };
 
@@ -109,7 +118,7 @@ const App = () => {
           {viewMode === 'discover' && (
             <CharacterList
               onSelectCharacter={handleCharacterSelect}
-              onCharacterDeleted={handleCharacterDeleted} // ✅ Supaya bisa langsung update UI
+              onCharacterDeleted={handleCharacterDeleted}
               customCharacters={customCharacters}
             />
           )}
