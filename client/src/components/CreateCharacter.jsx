@@ -40,16 +40,18 @@ const CreateCharacter = ({ onCreated }) => {
     formData.append("avatar", avatar);
 
     try {
-      await axios.post(`${BASE_URL}/create-character`, formData, {
+      const response = await axios.post(`${BASE_URL}/create-character`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
 
+      console.log("✅ Response dari backend:", response);
+
       const newChar = {
         name,
         anime: "Custom Character",
-        description: "Karakter buatan user.",
+        description,
         greeting,
         type: "custom",
         avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`,
@@ -57,9 +59,17 @@ const CreateCharacter = ({ onCreated }) => {
 
       onCreated(newChar);
     } catch (err) {
-      console.error(err);
-      alert("Gagal membuat karakter");
-    }
+  console.error("❌ Terjadi error saat create:", err);
+
+  // Jika ada response dari server (misalnya 400/500)
+  if (err.response) {
+    console.error("Respon error dari server:", err.response.data);
+    alert(`Gagal: ${err.response.data.message || "Server error"}`);
+  } else {
+    // Kalau errornya dari network atau lain-lain
+    alert("Gagal membuat karakter.");
+  }
+}
   };
 
   return (
