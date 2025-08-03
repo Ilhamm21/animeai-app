@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { BASE_URL } from './config';
+
 
 const CreateCharacter = ({ onCreated }) => {
   const [name, setName] = useState("");
@@ -10,7 +12,7 @@ const CreateCharacter = ({ onCreated }) => {
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  const BASE_URL = "https://animeai-app-production.up.railway.app";
+ 
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];

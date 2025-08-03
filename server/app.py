@@ -5,11 +5,16 @@ from pymongo import MongoClient
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+from flask import send_from_directory
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+if not os.path.exists('avatars'):
+    os.makedirs('avatars')
 
 print("✅ Flask app starting...")
 
@@ -329,22 +334,30 @@ from flask import send_file, abort
 
 @app.route('/avatars/<path:filename>')
 def serve_avatar(filename):
-    path = os.path.join('avatars', filename)
+    path = os.path.join(os.getcwd(), 'avatars', filename)
 
     if not os.path.isfile(path):
         abort(404)
 
-    # Tentukan tipe MIME secara eksplisit
-    if filename.lower().endswith('.png'):
-        mimetype = 'image/png'
-    elif filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
-        mimetype = 'image/jpeg'
-    elif filename.lower().endswith('.gif'):
-        mimetype = 'image/gif'
-    else:
-        mimetype = 'application/octet-stream'  # fallback
+    ext = filename.lower().split('.')[-1]
+    mimetype = f'image/{ext if ext != "jpg" else "jpeg"}'
 
     return send_file(path, mimetype=mimetype)
+
+@app.route('/upload-avatar', methods=['POST'])
+def upload_avatar():
+    if 'avatar' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    avatar = request.files['avatar']
+    filename = secure_filename(avatar.filename)
+    save_path = os.path.join('avatars', filename)
+    avatar.save(save_path)
+    return jsonify({'message': 'Upload berhasil', 'filename': filename})
+
+@app.route('/avatars/<filename>')
+def serve_avatar(filename):
+    return send_from_directory('avatars', filename)
 
 
 @app.route("/history/<user_id>", methods=["DELETE"])
