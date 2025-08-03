@@ -24,14 +24,16 @@ const App = () => {
     // Deteksi apakah ini karakter custom
     const isCustom = character.type === 'custom';
 
-    const avatarUrl = isCustom
-      ? `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`
-      : `${process.env.PUBLIC_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+    let characterData = character;
 
-    const characterData = {
-      ...character,
-      image: avatarUrl,
-    };
+    if (isCustom) {
+      characterData = {
+        ...character,
+        image: `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`,
+        type: 'custom',
+      };
+    }
+
 
     if (!isSameCharacter) {
       setActiveCharacter(characterData);
