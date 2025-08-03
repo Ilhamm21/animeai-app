@@ -11,8 +11,6 @@ const CreateCharacter = ({ onCreated }) => {
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setAvatar(file);
@@ -25,45 +23,53 @@ const CreateCharacter = ({ onCreated }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!name || !anime || !description || !image) {
-    alert('Semua kolom wajib diisi!');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("name", name);
-  formData.append("anime", anime);
-  formData.append("description", description);
-  formData.append("avatar", image);
-
-  try {
-    const res = await fetch("https://animeai-app-production.up.railway.app/create-character", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      onCreate(data); // ⬅️ Langsung masuk ke chat (App.jsx akan atur view-nya)
-    } else {
-      console.error("❌ Gagal buat karakter:", data.message || data.error);
+    // Validasi input
+    if (!name || !personality || !speechStyle || !greeting || !avatar) {
+      alert("Semua field wajib diisi kecuali kreator!");
+      return;
     }
-  } catch (err) {
-    console.error("⚠️ Error kirim karakter:", err);
-  }
 
-  // Reset form
-  setName('');
-  setAnime('');
-  setDescription('');
-  setImage(null);
-  setPreview(null);
-};
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("creator", creator || "Anonim");
+    formData.append("personality", personality);
+    formData.append("speechStyle", speechStyle);
+    formData.append("greeting", greeting);
+    formData.append("avatar", avatar);
 
+    try {
+      await axios.post(`${BASE_URL}/create-character`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
+      const newCharacter = {
+        name,
+        anime: "Custom Character",
+        description: "Karakter buatan user.",
+        greeting,
+        type: "custom",
+        avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`
+      };
+
+      onCreated(newCharacter);
+    } catch (err) {
+      console.error("❌ Gagal membuat karakter:", err);
+      alert("Gagal membuat karakter");
+    }
+
+    // Reset form
+    setName("");
+    setCreator("");
+    setPersonality("");
+    setSpeechStyle("");
+    setGreeting("");
+    setAvatar(null);
+    setPreview(null);
+  };
 
   return (
     <div className="w-full px-4 py-6 flex justify-center">
@@ -71,7 +77,7 @@ const CreateCharacter = ({ onCreated }) => {
         onSubmit={handleSubmit}
         className="w-full max-w-2xl bg-[#1f1f1f] rounded-xl p-6 text-white shadow-md"
       >
-        <h2 className="text-xl font-semibold mb-4 text-center">Buat Karakter Baru / Menambahkan karakter</h2>
+        <h2 className="text-xl font-semibold mb-4 text-center">Buat Karakter Baru</h2>
 
         {/* Upload Avatar */}
         <div className="mb-4">
