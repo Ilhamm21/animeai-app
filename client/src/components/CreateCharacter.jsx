@@ -37,7 +37,7 @@ const CreateCharacter = ({ onCreated }) => {
   formData.append("name", name);
   formData.append("anime", anime);
   formData.append("description", description);
-  formData.append("avatar", image); // ini file gambar
+  formData.append("avatar", image);
 
   try {
     const res = await fetch("https://animeai-app-production.up.railway.app/create-character", {
@@ -48,9 +48,9 @@ const CreateCharacter = ({ onCreated }) => {
     const data = await res.json();
 
     if (res.ok) {
-      onCreate(data); // data harus mengandung: name, anime, description, avatar (string nama file)
+      onCreate(data); // ⬅️ Langsung masuk ke chat (App.jsx akan atur view-nya)
     } else {
-      console.error("❌ Gagal buat karakter:", data.message);
+      console.error("❌ Gagal buat karakter:", data.message || data.error);
     }
   } catch (err) {
     console.error("⚠️ Error kirim karakter:", err);
@@ -63,6 +63,7 @@ const CreateCharacter = ({ onCreated }) => {
   setImage(null);
   setPreview(null);
 };
+
 
 
   return (
