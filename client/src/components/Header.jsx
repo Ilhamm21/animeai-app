@@ -3,17 +3,10 @@ import React from 'react';
 const Header = ({ character }) => {
   if (!character) return null;
 
-  const getAvatarSrc = (image) => {
-    if (image.startsWith('http')) return image; // dari backend
-    if (image.startsWith('/avatars')) return image; // path full dari character.js
-    return `/avatars/${image}`; // fallback kalau image cuma nama file
-  };
-
-
   return (
     <header className="flex items-center space-x-3 border-b border-gray-800 px-6 py-3 select-none flex-shrink-0">
       <img
-        src={getAvatarSrc(character.image)}
+        src={character.image}
         alt={character.name}
         className="rounded-full"
         width="32"
@@ -23,6 +16,7 @@ const Header = ({ character }) => {
           e.target.src = `/avatars/default.png`;
         }}
       />
+
 
 
 

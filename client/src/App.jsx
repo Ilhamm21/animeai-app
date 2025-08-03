@@ -19,113 +19,108 @@ const App = () => {
   });
 
   const handleCharacterSelect = (character) => {
-    const isSameCharacter = activeCharacter?.name === character.name;
+  const isSameCharacter = activeCharacter?.name === character.name;
+  const isCustom = character.anime === 'Custom Character' || character.type === 'custom';
 
-    // Deteksi apakah ini karakter custom
-    const isCustom = character.type === 'custom';
-
-    let characterData = character;
-
-    if (isCustom) {
-      characterData = {
-        ...character,
-        image: `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`,
-        type: 'custom',
-      };
-    }
-
-
-    if (!isSameCharacter) {
-      setActiveCharacter(characterData);
-      localStorage.setItem('last-character', JSON.stringify(characterData));
-      localStorage.setItem('last-used', new Date().toISOString());
-    }
-
-    setViewMode('chat');
+  const normalizedCharacter = {
+    ...character,
+    image: isCustom
+      ? character.image // sudah URL lengkap dari backend
+      : `/avatars/${character.image}` // untuk karakter default
   };
 
+  if (!isSameCharacter) {
+    setActiveCharacter(normalizedCharacter);
+    localStorage.setItem('last-character', JSON.stringify(normalizedCharacter));
+    localStorage.setItem('last-used', new Date().toISOString());
+  }
 
-  const handleClearChat = (characterName) => {
-    const name = characterName || activeCharacter?.name;
-    if (name) {
-      const characterKey = `chat-history-${name}`;
-      localStorage.removeItem(characterKey);
-    }
+  setViewMode('chat');
+};
 
+
+
+const handleClearChat = (characterName) => {
+  const name = characterName || activeCharacter?.name;
+  if (name) {
+    const characterKey = `chat-history-${name}`;
+    localStorage.removeItem(characterKey);
+  }
+
+  localStorage.removeItem('last-character');
+  localStorage.removeItem('last-used');
+  setActiveCharacter(null);
+  setViewMode('discover');
+};
+
+const handleCreateCharacter = (newCharacter) => {
+  const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
+
+  const characterWithImage = {
+    ...newCharacter,
+    image: avatarUrl,
+    type: 'custom', // <== Tambahkan ini penting!
+  };
+
+  setCustomCharacters((prev) => [...prev, characterWithImage]);
+  setActiveCharacter(characterWithImage);
+  localStorage.setItem("last-character", JSON.stringify(characterWithImage));
+  localStorage.setItem("last-used", new Date().toISOString());
+  setViewMode("chat");
+};
+
+const handleCharacterDeleted = (deletedName) => {
+  const updated = customCharacters.filter((char) => char.name !== deletedName);
+  setCustomCharacters(updated);
+  localStorage.setItem('chat-characters', JSON.stringify(updated));
+
+  // Jika karakter yang dihapus sedang aktif
+  if (activeCharacter?.name === deletedName) {
     localStorage.removeItem('last-character');
     localStorage.removeItem('last-used');
     setActiveCharacter(null);
     setViewMode('discover');
-  };
+  }
 
-  const handleCreateCharacter = (newCharacter) => {
-    const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
+  // Hapus histori chat-nya juga
+  localStorage.removeItem(`chat-history-${deletedName}`);
+};
 
-    const characterWithImage = {
-      ...newCharacter,
-      image: avatarUrl,
-      type: 'custom', // <== Tambahkan ini penting!
-    };
-
-    setCustomCharacters((prev) => [...prev, characterWithImage]);
-    setActiveCharacter(characterWithImage);
-    localStorage.setItem("last-character", JSON.stringify(characterWithImage));
-    localStorage.setItem("last-used", new Date().toISOString());
-    setViewMode("chat");
-  };
-
-  const handleCharacterDeleted = (deletedName) => {
-    const updated = customCharacters.filter((char) => char.name !== deletedName);
-    setCustomCharacters(updated);
-    localStorage.setItem('chat-characters', JSON.stringify(updated));
-
-    // Jika karakter yang dihapus sedang aktif
-    if (activeCharacter?.name === deletedName) {
-      localStorage.removeItem('last-character');
-      localStorage.removeItem('last-used');
-      setActiveCharacter(null);
-      setViewMode('discover');
-    }
-
-    // Hapus histori chat-nya juga
-    localStorage.removeItem(`chat-history-${deletedName}`);
-  };
-
-  return (
-    <div className="bg-[#121212] text-white font-sans min-h-screen flex flex h-screen">
-      <Sidebar
-        onDiscoverClick={() => setViewMode('discover')}
-        onCreateClick={() => setViewMode('create')}
-        onClearChat={handleClearChat}
-        activeCharacter={activeCharacter}
-        onCharacterSelect={handleCharacterSelect}
-        customCharacters={customCharacters}
-      />
-      <main className="flex flex-col h-screen flex-1 bg-[#121212]">
+return (
+  <div className="bg-[#121212] text-white font-sans min-h-screen flex flex h-screen">
+    <Sidebar
+      onDiscoverClick={() => setViewMode('discover')}
+      onCreateClick={() => setViewMode('create')}
+      onClearChat={handleClearChat}
+      activeCharacter={activeCharacter}
+      onCharacterSelect={handleCharacterSelect}
+      customCharacters={customCharacters}
+    />
+    <main className="flex flex-col h-screen flex-1 bg-[#121212]">
+      {viewMode === 'chat' && activeCharacter && (
+        <Header character={activeCharacter} />
+      )}
+      <div className="flex-1 overflow-y-auto">
         {viewMode === 'chat' && activeCharacter && (
-          <Header character={activeCharacter} />
+          <ChatBox character={activeCharacter} />
         )}
-        <div className="flex-1 overflow-y-auto">
-          {viewMode === 'chat' && activeCharacter && (
-            <ChatBox character={activeCharacter} />
-          )}
 
-          {viewMode === 'discover' && (
-            <CharacterList
-              onSelectCharacter={handleCharacterSelect}
-              onCharacterDeleted={handleCharacterDeleted} // ✅ Supaya bisa langsung update UI
-              customCharacters={customCharacters}
-            />
-          )}
+        {viewMode === 'discover' && (
+          <CharacterList
+            onSelectCharacter={handleCharacterSelect}
+            onCharacterDeleted={handleCharacterDeleted} // ✅ Supaya bisa langsung update UI
+            customCharacters={customCharacters}
+          />
+        )}
 
-          {viewMode === 'create' && (
-            <CreateCharacter onCreated={handleCreateCharacter} />
-          )}
-        </div>
-        <Footer />
-      </main>
-    </div>
-  );
+        {viewMode === 'create' && (
+          <CreateCharacter onCreated={handleCreateCharacter} />
+        )}
+      </div>
+      <Footer />
+    </main>
+  </div>
+);
 };
 
 export default App;
