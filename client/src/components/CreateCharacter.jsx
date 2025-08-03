@@ -26,49 +26,44 @@ const CreateCharacter = ({ onCreated }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!name || !personality || !speechStyle || !greeting || !avatar) {
-      alert("Semua field wajib diisi kecuali kreator!");
-      return;
-    }
+  if (!name || !anime || !description || !image) {
+    alert('Semua kolom wajib diisi!');
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("creator", creator || "Anonim");
-    formData.append("personality", personality);
-    formData.append("speechStyle", speechStyle);
-    formData.append("greeting", greeting);
-    formData.append("avatar", avatar);
-
-    try {
-  const response = await axios.post(`${BASE_URL}/create-character`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  console.log("✅ Response dari backend:", response.data);
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("anime", anime);
+  formData.append("description", description);
+  formData.append("avatar", image); // ini file gambar
 
   try {
-    onCreated(response.data.character);
-  } catch (err2) {
-    console.error("❌ Gagal menjalankan onCreated:", err2);
-    alert("Karakter berhasil dibuat, tapi terjadi error saat menambahkan ke daftar.");
+    const res = await fetch("https://animeai-app-production.up.railway.app/create-character", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      onCreate(data); // data harus mengandung: name, anime, description, avatar (string nama file)
+    } else {
+      console.error("❌ Gagal buat karakter:", data.message);
+    }
+  } catch (err) {
+    console.error("⚠️ Error kirim karakter:", err);
   }
 
-} catch (err) {
-  console.error("❌ Terjadi error saat create:", err);
+  // Reset form
+  setName('');
+  setAnime('');
+  setDescription('');
+  setImage(null);
+  setPreview(null);
+};
 
-  if (err.response) {
-    console.error("Respon error dari server:", err.response.data);
-    alert(`Gagal: ${err.response.data.message || "Server error"}`);
-  } else {
-    alert("Gagal membuat karakter.");
-  }
-}
-
-  };
 
   return (
     <div className="w-full px-4 py-6 flex justify-center">
