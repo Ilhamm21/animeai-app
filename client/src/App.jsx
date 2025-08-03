@@ -40,7 +40,6 @@ const App = () => {
 };
 
 
-
 const handleClearChat = (characterName) => {
   const name = characterName || activeCharacter?.name;
   if (name) {
@@ -56,7 +55,7 @@ const handleClearChat = (characterName) => {
 
 const handleCreateCharacter = (newCharacter) => {
   const imageUrl = newCharacter.avatar
-    ? `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`
+    ? `${BASE_URL}/avatars/${newCharacter.avatar}`
     : "/avatars/default.png";
 
   const characterWithImage = {
@@ -71,33 +70,6 @@ const handleCreateCharacter = (newCharacter) => {
   localStorage.setItem("last-used", new Date().toISOString());
   setViewMode("chat");
 };
-
-
-// const handleCreateCharacter = (newCharacter) => {
-//   console.log("📦 Data karakter baru:", newCharacter);
-
-//   if (!newCharacter.avatar) {
-//     console.error("❌ Avatar karakter tidak ada!");
-//     // alert("Karakter berhasil dibuat, tapi gambar avatar gagal dimuat.");
-//     return;
-//   }
-
-//   const avatarUrl = `${BASE_URL}/avatars/${newCharacter.avatar}`;
-
-//   const characterWithImage = {
-//     ...newCharacter,
-//     image: avatarUrl,
-//     type: 'custom',
-//   };
-
-//   console.log("✅ Karakter dengan image lengkap:", characterWithImage);
-
-//   setCustomCharacters((prev) => [...prev, characterWithImage]);
-//   setActiveCharacter(characterWithImage);
-//   localStorage.setItem("last-character", JSON.stringify(characterWithImage));
-//   localStorage.setItem("last-used", new Date().toISOString());
-//   setViewMode("chat");
-// };
 
 
 const handleCharacterDeleted = (deletedName) => {
