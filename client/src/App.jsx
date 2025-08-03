@@ -6,6 +6,8 @@ import Footer from './components/Footer';
 import CharacterList from './components/CharacterList';
 import CreateCharacter from './components/CreateCharacter';
 
+const BASE_URL = "https://animeai-app-production.up.railway.app"; // ganti dengan URL backend-mu
+
 const App = () => {
   const savedCharacter = localStorage.getItem('last-character');
   const [activeCharacter, setActiveCharacter] = useState(
@@ -54,13 +56,23 @@ const handleClearChat = (characterName) => {
 };
 
 const handleCreateCharacter = (newCharacter) => {
+  console.log("📦 Data karakter baru:", newCharacter);
+
+  if (!newCharacter.avatar) {
+    console.error("❌ Avatar karakter tidak ada!");
+    alert("Karakter berhasil dibuat, tapi gambar avatar gagal dimuat.");
+    return;
+  }
+
   const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
 
   const characterWithImage = {
     ...newCharacter,
     image: avatarUrl,
-    type: 'custom', // <== Tambahkan ini penting!
+    type: 'custom',
   };
+
+  console.log("✅ Karakter dengan image lengkap:", characterWithImage);
 
   setCustomCharacters((prev) => [...prev, characterWithImage]);
   setActiveCharacter(characterWithImage);
@@ -68,6 +80,7 @@ const handleCreateCharacter = (newCharacter) => {
   localStorage.setItem("last-used", new Date().toISOString());
   setViewMode("chat");
 };
+
 
 const handleCharacterDeleted = (deletedName) => {
   const updated = customCharacters.filter((char) => char.name !== deletedName);
