@@ -301,11 +301,29 @@ def get_character_chat_history(user_id, character):
 # API untuk menghapus karakter buatan user
 @app.route("/character/<name>", methods=["DELETE"])
 def delete_character(name):
-    result = db.characters.delete_one({"name": name})
-    if result.deleted_count > 0:
-        return jsonify({"message": f"Karakter '{name}' berhasil dihapus."})
-    else:
+    # Cari karakter custom di database
+    character = db.characters.find_one({"name": name})
+    if not character:
         return jsonify({"error": f"Karakter '{name}' tidak ditemukan atau bukan karakter custom."}), 404
+
+    # Hapus data karakter dari database
+    result = db.characters.delete_one({"name": name})
+
+    # Jika karakter ditemukan dan berhasil dihapus
+    if result.deleted_count > 0:
+        # Hapus file avatar jika ada
+        avatar_filename = character.get("avatar")
+        avatar_path = os.path.join("avatars", avatar_filename)
+        if avatar_filename and os.path.exists(avatar_path):
+            os.remove(avatar_path)
+            print(f"🗑️ Avatar '{avatar_filename}' berhasil dihapus.")
+        else:
+            print(f"⚠️ Avatar '{avatar_filename}' tidak ditemukan atau sudah dihapus sebelumnya.")
+
+        return jsonify({"message": f"Karakter '{name}' dan avatar-nya berhasil dihapus."})
+    else:
+        return jsonify({"error": f"Gagal menghapus karakter '{name}'."}), 500
+
 
 from flask import send_from_directory
 
