@@ -64,7 +64,7 @@ const handleCreateCharacter = (newCharacter) => {
     return;
   }
 
-  const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
+  const avatarUrl = `${BASE_URL}/avatars/${newCharacter.avatar}`;
 
   const characterWithImage = {
     ...newCharacter,
