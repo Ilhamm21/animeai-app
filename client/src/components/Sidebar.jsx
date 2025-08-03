@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaBars, FaTimes } from 'react-icons/fa'; // icon toggle
+import { BASE_URL } from '../config'; // import BASE_URL from config
+
 
 
 const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter, onCharacterSelect }) => {
@@ -9,8 +11,6 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 toggle
 
   const dropdownRef = useRef();
-
-  const BASE_URL = "https://animeai-app-production.up.railway.app";
 
   useEffect(() => {
     const saved = localStorage.getItem('chat-characters');

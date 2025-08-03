@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ChatMessages from './ChatMessages';
 import MessageInput from './MessageInput';
+import { BASE_URL } from '../config';
+
 
 function ChatBox({ character }) {
   const [messages, setMessages] = useState([]);
@@ -17,8 +19,6 @@ function ChatBox({ character }) {
     }
     return id;
   };
-
-  const BASE_URL = "https://animeai-app-production.up.railway.app";
 
   const guestId = getGuestId();
 

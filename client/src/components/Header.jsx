@@ -1,10 +1,10 @@
 import React from 'react';
+import { BASE_URL } from '../config'; // Import BASE_URL from config
 
 const Header = ({ character }) => {
   if (!character) return null;
 
-    const BASE_URL = "https://animeai-app-production.up.railway.app";
-    
+
   return (
     <header className="flex items-center space-x-3 border-b border-gray-800 px-6 py-3 select-none flex-shrink-0">
       <img

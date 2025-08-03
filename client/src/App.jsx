@@ -5,8 +5,7 @@ import ChatBox from './components/ChatBox';
 import Footer from './components/Footer';
 import CharacterList from './components/CharacterList';
 import CreateCharacter from './components/CreateCharacter';
-
-const BASE_URL = "https://animeai-app-production.up.railway.app"; // ganti dengan URL backend-mu
+import { BASE_URL } from './config'; // Import BASE_URL from config
 
 const App = () => {
   const savedCharacter = localStorage.getItem('last-character');

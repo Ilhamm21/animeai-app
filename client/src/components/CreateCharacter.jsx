@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-
-const BASE_URL = "https://animeai-app-production.up.railway.app";
+import { BASE_URL } from '../config';
 
 const CreateCharacter = ({ onCreated }) => {
   const [name, setName] = useState("");
