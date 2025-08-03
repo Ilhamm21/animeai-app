@@ -11,7 +11,7 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": [
     "http://localhost:5173", 
-    "https://anime-ai.vercel.app"
+    "animeai-app-production.up.railway.app"
 ]}}, supports_credentials=True)
 
 
