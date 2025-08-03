@@ -140,15 +140,18 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
                   <div className="flex items-center space-x-2">
                     <img
                       src={
+                        // kalau char.image sudah URL lengkap, pakai itu
                         char.image.startsWith('http')
                           ? char.image
-                          : `/avatars/${char.image}`
+                          // kalau cuma nama file, prefix BASE_URL
+                          : `${BASE_URL}/avatars/${char.image}`
                       }
                       alt={char.name}
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = `/avatars/default.png`;
+                        // fallback image juga harus dari backend
+                        e.target.src = `${BASE_URL}/avatars/default.png`;
                       }}
                     />
 

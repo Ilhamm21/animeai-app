@@ -22,7 +22,7 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
           description: 'Karakter buatan user.',
           image: char.avatar
             ? `${BASE_URL}/avatars/${char.avatar}`
-            : '/avatars/default.png',
+            : `${BASE_URL}/avatars/default.png`,
 
         }));
 

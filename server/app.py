@@ -198,6 +198,7 @@ Petunjuk:
 
 
 # API untuk membuat karakter
+
 @app.route("/create-character", methods=["POST"])
 def create_character():
     name = request.form.get("name")
@@ -214,20 +215,27 @@ def create_character():
     if db.characters.find_one({"name": name}):
         return jsonify({"error": "Karakter dengan nama ini sudah ada."}), 400
 
-    ext = os.path.splitext(avatar_file.filename)[1]  # ambil ekstensi asli (.png / .jpg / .jpeg / .webp)
-    filename = f"{name.lower().replace(' ', '_')}{ext}"
-    avatar_file.save(f"./avatars/{filename}")
+    # Ambil ekstensi asli dan buat nama file aman
+    ext = os.path.splitext(avatar_file.filename)[1]
+    filename_raw = f"{name.lower().replace(' ', '_')}{ext}"
+    filename = secure_filename(filename_raw)
 
-    prompt = f"""
-{name} adalah karakter yang memiliki kepribadian sebagai berikut:
+    # Pastikan folder avatars/ ada
+    os.makedirs("avatars", exist_ok=True)
+
+    # Simpan avatar
+    avatar_file.save(os.path.join("avatars", filename))
+
+    # Prompt format
+    prompt = f"""{name} adalah karakter yang memiliki kepribadian sebagai berikut:
 {personality}
 
 Gaya bicaranya:
 {speech_style}
 
-NOTE: Jangan pernah keluar dari karakter.
-"""
+NOTE: Jangan pernah keluar dari karakter."""
 
+    # Simpan ke DB
     db.characters.insert_one({
         "name": name,
         "creator": creator,
@@ -237,16 +245,16 @@ NOTE: Jangan pernah keluar dari karakter.
     })
 
     return jsonify({
-    "message": "Karakter berhasil dibuat!",
-    "character": {
-        "name": name,
-        "anime": "Custom Character",
-        "description": personality,
-        "greeting": greeting,
-        "type": "custom",
-        "avatar": filename
-    }
-}), 200
+        "message": "Karakter berhasil dibuat!",
+        "character": {
+            "name": name,
+            "anime": "Custom Character",
+            "description": personality,
+            "greeting": greeting,
+            "type": "custom",
+            "avatar": filename  # ini penting agar frontend tahu nama file yg benar
+        }
+    }), 200
 
 
 # Ambil karakter buatan user dari database jika tidak ditemukan di karakter default
