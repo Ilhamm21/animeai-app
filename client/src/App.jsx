@@ -56,19 +56,15 @@ const handleClearChat = (characterName) => {
 };
 
 const handleCreateCharacter = (newCharacter) => {
-  console.log("📦 Data karakter baru:", newCharacter);
-
-  const avatarUrl = newCharacter.avatar
+  const imageUrl = newCharacter.avatar
     ? `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`
-    : ""; // fallback kosong jika avatar tidak ada
+    : "/avatars/default.png";
 
   const characterWithImage = {
     ...newCharacter,
-    image: avatarUrl,
+    image: imageUrl,
     type: 'custom',
   };
-
-  console.log("✅ Karakter dengan image lengkap:", characterWithImage);
 
   setCustomCharacters((prev) => [...prev, characterWithImage]);
   setActiveCharacter(characterWithImage);
@@ -76,6 +72,7 @@ const handleCreateCharacter = (newCharacter) => {
   localStorage.setItem("last-used", new Date().toISOString());
   setViewMode("chat");
 };
+
 
 // const handleCreateCharacter = (newCharacter) => {
 //   console.log("📦 Data karakter baru:", newCharacter);
