@@ -5,7 +5,7 @@ export const characters = [
     name: 'Rem',
     anime: 'Re:Zero',
     description: 'Lembut, penyayang, dan setia. Selalu mendukung lawan bicara.',
-    image: '/avatars/rem.png',
+    image: './avatars/rem.png',
     greeting: 'Selamat datang. Apakah ada yang bisa Rem bantu?'
   },
   {

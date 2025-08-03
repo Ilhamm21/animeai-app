@@ -9,21 +9,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": [
+    "http://localhost:5173", 
+    "https://anime-ai.vercel.app"
+]}}, supports_credentials=True)
 
-print("✅ Flask app starting...")
-
-@app.route("/")
-def hello():
-    return "Hello from Flask + Railway!"
 
 # Koneksi ke MongoDB
-# Koneksi ke MongoDB (tambahkan pengecekan)
-mongodb_uri = os.getenv("MONGODB_URI")
-if not mongodb_uri:
-    raise ValueError("MONGODB_URI is not set in environment variables")
-
-client_db = MongoClient(mongodb_uri)
+client_db = MongoClient("mongodb+srv://animeuser:2122@animeai-cluster.fidk96g.mongodb.net/")
 db = client_db.ai_chatbot  # Nama database
 chats_collection = db.chats  # Koleksi chat
 
@@ -32,18 +25,10 @@ if not os.path.exists("./avatars"):
     os.makedirs("./avatars")
 
 # API Key untuk OpenAI
-openai_key = os.getenv("OPENAI_API_KEY")
-if not openai_key:
-    raise ValueError("OPENAI_API_KEY is not set in environment variables")
-
 client = OpenAI(
     base_url="https://api.openai.com/v1",
-    api_key=openai_key
+    api_key=os.getenv("OPENAI_API_KEY")
 )
-
-print("OPENAI:", os.getenv("OPENAI_API_KEY"))
-print("MONGODB:", os.getenv("MONGODB_URI"))
-
 
 characters_notes = "BAWAHLAH PEMBAWAAN SEOLAH MASUK KEDALAM DUNIA ANIME/KAMU ADA LAH ORANG PENTING YANG ADA DALAM CERITA ANIME. JIKA YANG DIAJAK NGOBROL ADALAH TOKOH UTAMA JADIKAN PENGGUNA SEBAGAI SAHABAT ATAU RIVAL, JIKA YANG DIAJAK BUKAN TOKOH UTAMA JADIKAN PENGGUNA SEOLAH TOKOH UTAMA. JANGAN PERNAH KELUAR DARI KARAKTER. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH AI ATAU CHATBOT. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH PROGRAM ATAU KODE. JANGAN PERNAH MENYEBUTKAN BAHWA KAMU ADALAH MODEL AI."
 
@@ -92,7 +77,12 @@ def save_chat(user_id, character, user_input, bot_reply, bot_emotion="neutral"):
         "bot_emotion": bot_emotion,
         "created_at": datetime.utcnow(),
     }
-    chats_collection.insert_one(chat_data)
+    chats_collection.insert_one(chat_data)  # Simpan ke database
+
+# Fungsi untuk mengambil chat history dari MongoDB
+def get_chat_history(user_id):
+    history = list(chats_collection.find({"user_id": user_id}, {"_id": 0}))
+    return history
 
 # Prompt global agar karakter merasa hidup di dunia anime mereka
 prompt_global = """
@@ -115,81 +105,63 @@ Jika pengguna mencoba menanyakan karakter diluar dunia anime atau dunia anime ya
 
 """
 
-
-print("CHARACTERS:", characters.keys())
-print("CHAR REM:", characters.get("Rem"))
 # API untuk chatbot AI
 @app.route("/chat", methods=["POST"])
 def chat():
     try:
         data = request.json
-        print("DATA MASUK:", data)
-
-        # Ambil data dari request
         user_id = data.get("user_id", "guest")
         selected_character = data.get("character", "Rem")
         user_input = data.get("message", "")
 
-        # Cek karakter bawaan atau custom
         if selected_character in characters:
             base_prompt = characters[selected_character]
         else:
             custom_char = db.characters.find_one({"name": selected_character})
-            if custom_char and "prompt" in custom_char:
-                base_prompt = custom_char["prompt"]
-            else:
-                base_prompt = characters.get("Rem", "")
+            base_prompt = custom_char["prompt"] if custom_char else characters["Rem"]
 
-        # Gabungkan dengan prompt global
+
+
         system_prompt = f"""
-{prompt_global.strip()}
+        
+        {prompt_global.strip()}
 
-{base_prompt.strip()}
+        {base_prompt.strip()}
 
-Petunjuk:
-- Jangan pernah keluar dari karakter anime.
-"""
+        Petunjuk:
+        - Jangan pernah keluar dari karakter anime.
+        """
 
-        # Ambil history chat terakhir dari MongoDB (maks 5)
+
         chat_history = list(chats_collection.find(
             {"user_id": user_id, "character": selected_character},
             {"_id": 0, "user_message": 1, "bot_reply": 1}
         ).sort("_id", -1).limit(5))
 
-        
-        # Susun history untuk OpenAI
         conversation_history = [{"role": "system", "content": system_prompt}]
+
         for chat in reversed(chat_history):
             conversation_history.append({"role": "user", "content": chat["user_message"]})
             conversation_history.append({"role": "assistant", "content": chat["bot_reply"]})
 
-        # Tambahkan input terbaru pengguna
         conversation_history.append({"role": "user", "content": user_input})
 
-        # Kirim ke OpenAI
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=conversation_history
         )
-        
-        print("✅ RESPON OPENAI:", response)
 
+        raw_bot_reply = response.choices[0].message.content
+        bot_text = raw_bot_reply
 
-        bot_text = response.choices[0].message.content
-
-        # Simpan chat ke MongoDB
         save_chat(user_id, selected_character, user_input, bot_text)
 
-        # Kirim balasan ke frontend
-        return jsonify({"reply": bot_text})
+        return jsonify({
+            "reply": bot_text
+        })
 
     except Exception as e:
-        import traceback
-        print("❌ ERROR TERJADI DI /chat")
-        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
-
-    
 
 
 # API untuk membuat karakter
@@ -231,18 +203,7 @@ NOTE: Jangan pernah keluar dari karakter.
         "avatar": filename
     })
 
-    return jsonify({
-    "message": "Karakter berhasil dibuat!",
-    "character": {
-        "name": name,
-        "anime": "Custom Character",
-        "description": personality,
-        "greeting": greeting,
-        "type": "custom",
-        "avatar": filename
-    }
-}), 200
-
+    return jsonify({"message": "Karakter berhasil dibuat!"})
 
 # Ambil karakter buatan user dari database jika tidak ditemukan di karakter default
 def get_character_prompt(character_name):
@@ -330,10 +291,6 @@ def delete_chat_history(user_id, character):
     return jsonify({"message": f"{result.deleted_count} chat berhasil dihapus untuk karakter '{character}' dan user '{user_id}'."})
 
 
-
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
-
-
+    app.run(host="0.0.0.0", port=5000)
 
