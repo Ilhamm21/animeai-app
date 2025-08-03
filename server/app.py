@@ -307,11 +307,11 @@ def delete_character(name):
     else:
         return jsonify({"error": f"Karakter '{name}' tidak ditemukan atau bukan karakter custom."}), 404
 
-from flask import send_from_directory
+# from flask import send_from_directory
 
-@app.route('/avatars/<filename>')
-def serve_avatar(filename):
-    return send_from_directory('avatars', filename)
+# @app.route('/avatars/<filename>')
+# def serve_avatar(filename):
+#     return send_from_directory('avatars', filename)
 
 
 @app.route("/history/<user_id>", methods=["DELETE"])
