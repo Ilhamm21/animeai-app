@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { BASE_URL } from '../config';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 const CreateCharacter = ({ onCreated }) => {
   const [name, setName] = useState("");

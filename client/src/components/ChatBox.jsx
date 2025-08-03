@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ChatMessages from './ChatMessages';
 import MessageInput from './MessageInput';
-import { BASE_URL } from '../config';
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 
 function ChatBox({ character }) {

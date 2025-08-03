@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { characters as defaultCharacters } from './characters';
-import { BASE_URL } from '../config'; // Import BASE_URL from config
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 
 const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {

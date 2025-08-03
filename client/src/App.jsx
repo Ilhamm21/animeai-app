@@ -5,7 +5,8 @@ import ChatBox from './components/ChatBox';
 import Footer from './components/Footer';
 import CharacterList from './components/CharacterList';
 import CreateCharacter from './components/CreateCharacter';
-import { BASE_URL } from './config'; // Import BASE_URL from config
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 const App = () => {
   const savedCharacter = localStorage.getItem('last-character');

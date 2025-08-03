@@ -1,5 +1,6 @@
 import React from 'react';
-import { BASE_URL } from '../config'; // Import BASE_URL from config
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 
 const Header = ({ character }) => {
   if (!character) return null;
