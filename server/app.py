@@ -355,9 +355,9 @@ def upload_avatar():
     avatar.save(save_path)
     return jsonify({'message': 'Upload berhasil', 'filename': filename})
 
-@app.route('/avatars/<filename>')
-def serve_avatar(filename):
-    return send_from_directory('avatars', filename)
+# @app.route('/avatars/<filename>')
+# def serve_avatar(filename):
+#     return send_from_directory('avatars', filename)
 
 
 @app.route("/history/<user_id>", methods=["DELETE"])
