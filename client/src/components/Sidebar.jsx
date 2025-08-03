@@ -125,9 +125,8 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
               {chatCharacters.map((char, index) => (
                 <div
                   key={index}
-                  className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer ${
-                    activeCharacter?.name === char.name ? 'bg-[#3a3a3a]' : 'bg-[#2a2a2a]'
-                  } hover:bg-[#3a3a3a]`}
+                  className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer ${activeCharacter?.name === char.name ? 'bg-[#3a3a3a]' : 'bg-[#2a2a2a]'
+                    } hover:bg-[#3a3a3a]`}
                   onClick={() => {
                     if (activeCharacter?.name !== char.name) {
                       localStorage.setItem('last-character', JSON.stringify(char));
@@ -139,14 +138,19 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
                 >
                   <div className="flex items-center space-x-2">
                     <img
-                      src={char.image}
+                      src={
+                        char.image.startsWith('http')
+                          ? char.image
+                          : `${process.env.PUBLIC_URL}/avatars/${char.image}`
+                      }
                       alt={char.name}
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = '/avatars/default.png';
+                        e.target.src = `${process.env.PUBLIC_URL}/avatars/default.png`;
                       }}
                     />
+
                     <span className="truncate text-white text-sm">{char.name}</span>
                   </div>
                   <button

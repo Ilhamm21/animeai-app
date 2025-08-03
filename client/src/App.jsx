@@ -21,11 +21,12 @@ const App = () => {
   const handleCharacterSelect = (character) => {
     const isSameCharacter = activeCharacter?.name === character.name;
 
-    const BASE_URL = "https://animeai-app-production.up.railway.app";
+    // Deteksi apakah ini karakter custom
+    const isCustom = character.type === 'custom';
 
-    const avatarUrl = character.type === 'custom'
-      ? `/avatars/${character.avatar}`
-      : `/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
+    const avatarUrl = isCustom
+      ? `https://animeai-app-production.up.railway.app/avatars/${character.avatar}`
+      : `${process.env.PUBLIC_URL}/avatars/${character.name.toLowerCase().replace(/ /g, "_")}.png`;
 
     const characterData = {
       ...character,
@@ -41,6 +42,7 @@ const App = () => {
     setViewMode('chat');
   };
 
+
   const handleClearChat = (characterName) => {
     const name = characterName || activeCharacter?.name;
     if (name) {
@@ -55,20 +57,20 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-  const avatarUrl = `${BASE_URL}/${newCharacter.avatar}`;
+    const avatarUrl = `https://animeai-app-production.up.railway.app/avatars/${newCharacter.avatar}`;
 
-  const characterWithImage = {
-    ...newCharacter,
-    image: avatarUrl,
+    const characterWithImage = {
+      ...newCharacter,
+      image: avatarUrl,
+      type: 'custom', // <== Tambahkan ini penting!
+    };
+
+    setCustomCharacters((prev) => [...prev, characterWithImage]);
+    setActiveCharacter(characterWithImage);
+    localStorage.setItem("last-character", JSON.stringify(characterWithImage));
+    localStorage.setItem("last-used", new Date().toISOString());
+    setViewMode("chat");
   };
-
-  setCustomCharacters((prev) => [...prev, characterWithImage]);
-  setActiveCharacter(characterWithImage);
-  localStorage.setItem("last-character", JSON.stringify(characterWithImage));
-  localStorage.setItem("last-used", new Date().toISOString());
-  setViewMode("chat");
-};
-
 
   const handleCharacterDeleted = (deletedName) => {
     const updated = customCharacters.filter((char) => char.name !== deletedName);
