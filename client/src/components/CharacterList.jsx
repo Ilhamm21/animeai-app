@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { characters as defaultCharacters } from './characters';
-import { BASE_URL } from './config';
 
 
 const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
   const [customCharacters, setCustomCharacters] = useState([]);
   const [selectedAnime, setSelectedAnime] = useState('All');
 
+  const BASE_URL = "https://animeai-app-production.up.railway.app";
 
   useEffect(() => {
     fetchCharacters();
