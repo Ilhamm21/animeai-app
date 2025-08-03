@@ -19,7 +19,10 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
           name: char.name,
           anime: 'Custom Character',
           description: 'Karakter buatan user.',
-          image: `${BASE_URL}/avatars/${char.avatar}`,
+          image: char.avatar
+            ? `${BASE_URL}/avatars/${char.avatar}`
+            : '/avatars/default.png',
+
         }));
 
         setCustomCharacters(custom);
@@ -31,18 +34,18 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
   };
 
   const handleDelete = (name) => {
-  if (window.confirm(`Hapus karakter "${name}"?`)) {
-    axios.delete(`${BASE_URL}/character/${encodeURIComponent(name)}`)
-      .then(() => {
-        setCustomCharacters(prev => prev.filter(c => c.name !== name));
-        onCharacterDeleted && onCharacterDeleted(name); // Hapus dari localStorage + sidebar
-      })
-      .catch((err) => {
-        console.error('Gagal menghapus karakter:', err);
-        alert('Gagal menghapus karakter.');
-      });
-  }
-};
+    if (window.confirm(`Hapus karakter "${name}"?`)) {
+      axios.delete(`${BASE_URL}/character/${encodeURIComponent(name)}`)
+        .then(() => {
+          setCustomCharacters(prev => prev.filter(c => c.name !== name));
+          onCharacterDeleted && onCharacterDeleted(name); // Hapus dari localStorage + sidebar
+        })
+        .catch((err) => {
+          console.error('Gagal menghapus karakter:', err);
+          alert('Gagal menghapus karakter.');
+        });
+    }
+  };
 
   const combinedCharacters = [...customCharacters, ...defaultCharacters];
 
@@ -80,7 +83,12 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
                 src={char.image}
                 alt={char.name}
                 className="w-20 h-24 rounded-xl object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `/avatars/default.png`;
+                }}
               />
+
               <div className="flex flex-col justify-between max-w-[180px]">
                 <div>
                   <p className="text-lg font-bold">{char.name}</p>

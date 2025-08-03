@@ -325,11 +325,26 @@ def delete_character(name):
         return jsonify({"error": f"Gagal menghapus karakter '{name}'."}), 500
 
 
-from flask import send_from_directory
+from flask import send_file, abort
 
-@app.route('/avatars/<filename>')
+@app.route('/avatars/<path:filename>')
 def serve_avatar(filename):
-    return send_from_directory('avatars', filename)
+    path = os.path.join('avatars', filename)
+
+    if not os.path.isfile(path):
+        abort(404)
+
+    # Tentukan tipe MIME secara eksplisit
+    if filename.lower().endswith('.png'):
+        mimetype = 'image/png'
+    elif filename.lower().endswith('.jpg') or filename.lower().endswith('.jpeg'):
+        mimetype = 'image/jpeg'
+    elif filename.lower().endswith('.gif'):
+        mimetype = 'image/gif'
+    else:
+        mimetype = 'application/octet-stream'  # fallback
+
+    return send_file(path, mimetype=mimetype)
 
 
 @app.route("/history/<user_id>", methods=["DELETE"])

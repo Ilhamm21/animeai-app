@@ -141,13 +141,13 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
                       src={
                         char.image.startsWith('http')
                           ? char.image
-                          : `${process.env.PUBLIC_URL}/avatars/${char.image}`
+                          : `/avatars/${char.image}`
                       }
                       alt={char.name}
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = `${process.env.PUBLIC_URL}/avatars/default.png`;
+                        e.target.src = `/avatars/default.png`;
                       }}
                     />
 
