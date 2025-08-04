@@ -95,6 +95,7 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
                 <div>
                   <p className="text-lg font-bold">{char.name}</p>
                   <p className="text-sm text-gray-400">Anime: {char.anime}</p>
+                  <p className="text-sm text-gray-400">Creator: {char.creator}</p>
                 </div>
                 <p className="text-sm text-gray-300 mt-2 break-words line-clamp-3">{char.description}</p>
               </div>

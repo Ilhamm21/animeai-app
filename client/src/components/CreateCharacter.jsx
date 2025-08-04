@@ -111,7 +111,7 @@ const CreateCharacter = ({ onCreated }) => {
 
         {/* Anime */}
         <div className="mb-4">
-          <label className="text-sm">Anime (Opsional)</label>
+          <label className="text-sm">Anime</label>
           <input
             type="text"
             maxLength={30}
