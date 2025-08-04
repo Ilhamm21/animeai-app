@@ -7,6 +7,7 @@ import CharacterList from './components/CharacterList';
 import CreateCharacter from './components/CreateCharacter';
 const BASE_URL = import.meta.env.VITE_BASE_URL || "https://animeai-app-production.up.railway.app";
 
+console.log("BASE_URL:", import.meta.env.VITE_BASE_URL);
 
 
 const App = () => {
@@ -56,7 +57,7 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-    const imageUrl = newCharacter.avatar
+    let imageUrl = newCharacter.avatar
       ? `${BASE_URL}/avatars/${newCharacter.avatar}`
       : "/avatars/default.png";
 
