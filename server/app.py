@@ -157,6 +157,7 @@ Petunjuk:
 @app.route("/create-character", methods=["POST"])
 def create_character():
     name = request.form.get("name")
+    anime = request.form.get("anime")
     creator = request.form.get("creator")
     personality = request.form.get("personality")
     speech_style = request.form.get("speechStyle")
@@ -193,6 +194,7 @@ NOTE: Jangan pernah keluar dari karakter."""
     # Simpan ke DB
     db.characters.insert_one({
         "name": name,
+        "anime": anime,
         "creator": creator,
         "prompt": prompt,
         "greeting": greeting,

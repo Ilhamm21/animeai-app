@@ -14,17 +14,18 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
   }, []);
 
   const fetchCharacters = () => {
-    axios.get(`${BASE_URL}/characters`)
-      .then((res) => {
-        const custom = res.data.custom.map(char => ({
-          name: char.name,
-          anime: 'Custom Character',
-          description: 'Karakter buatan user.',
-          image: char.avatar
-            ? `${BASE_URL}/avatars/${char.avatar}`
-            : `${BASE_URL}/avatars/default.png`,
-
-        }));
+  axios.get(`${BASE_URL}/characters`)
+    .then((res) => {
+      const custom = res.data.custom.map(char => ({
+        name: char.name,
+        anime: char.anime || 'Custom Character',
+        description: char.creator 
+          ? `Karakter buatan ${char.creator}.` 
+          : 'Karakter buatan user.',
+        image: char.avatar
+          ? `${BASE_URL}/avatars/${char.avatar}`
+          : `${BASE_URL}/avatars/default.png`,
+      }));
 
         setCustomCharacters(custom);
       })

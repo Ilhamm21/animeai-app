@@ -34,6 +34,7 @@ const CreateCharacter = ({ onCreated }) => {
 
     const formData = new FormData();
     formData.append("name", name);
+    formData.append("anime", "Custom Character");
     formData.append("creator", creator || "Anonim");
     formData.append("personality", personality);
     formData.append("speechStyle", speechStyle);
@@ -46,7 +47,7 @@ const CreateCharacter = ({ onCreated }) => {
           "Content-Type": "multipart/form-data",
         },
       });
-      
+
       const newCharacter = {
         name,
         anime: "Custom Character",
@@ -65,6 +66,7 @@ const CreateCharacter = ({ onCreated }) => {
     // Reset form
     setName("");
     setCreator("");
+    setAnime("");
     setPersonality("");
     setSpeechStyle("");
     setGreeting("");
@@ -95,13 +97,26 @@ const CreateCharacter = ({ onCreated }) => {
 
         {/* Name */}
         <div className="mb-4">
-          <label className="text-sm">Nama Karakter</label>
+          <label className="text-sm">Nama Karakter/Menambahkan Karakter</label>
           <input
             type="text"
             maxLength={30}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Contoh: Sasuke Uchiha"
+            className="w-full p-3 mt-1 rounded-xl bg-[#18181B] border border-gray-600 text-sm"
+          />
+        </div>
+
+        {/* Anime */}
+        <div className="mb-4">
+          <label className="text-sm">Anime (Opsional)</label>
+          <input
+            type="text"
+            maxLength={30}
+            value={anime}
+            onChange={(e) => setAnime(e.target.value)}
+            placeholder="Contoh: Naruto,"
             className="w-full p-3 mt-1 rounded-xl bg-[#18181B] border border-gray-600 text-sm"
           />
         </div>
