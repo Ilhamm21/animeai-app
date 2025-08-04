@@ -101,7 +101,7 @@ const CreateCharacter = ({ onCreated }) => {
             maxLength={30}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Contoh: Kirito"
+            placeholder="Contoh: Sasuke Uchiha"
             className="w-full p-3 mt-1 rounded-xl bg-[#18181B] border border-gray-600 text-sm"
           />
         </div>
