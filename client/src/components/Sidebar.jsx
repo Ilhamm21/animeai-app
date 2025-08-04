@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa'; // icon toggle
+import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from 'react-icons/io'; // icon toggle
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 
@@ -79,9 +79,10 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
       {/* Toggle button hanya tampil di mobile */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-[#1c1c1c] text-white p-2 rounded-md shadow-md"
+        className={`md:hidden fixed top-1/2 z-50 -translate-y-1/2 bg-[#1c1c1c] text-white p-3 rounded-r-xl shadow-lg backdrop-blur-sm hover:bg-[#1c1c1c] transition-all duration-300 ${isSidebarOpen ? 'left-64' : 'left-0'
+          }`}
       >
-        {isSidebarOpen ? <FaTimes /> : <FaBars />}
+        {isSidebarOpen ? <IoIosArrowDroprightCircle size={28} /> : <IoIosArrowDropleftCircle size={28} />}
       </button>
 
       {/* Sidebar */}
