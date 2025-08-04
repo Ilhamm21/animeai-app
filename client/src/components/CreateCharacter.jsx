@@ -46,7 +46,7 @@ const CreateCharacter = ({ onCreated }) => {
           "Content-Type": "multipart/form-data",
         },
       });
-      console.log("newCharacter:", S); // ⬅️ Tambahkan ini
+      
       const newCharacter = {
         name,
         anime: "Custom Character",
