@@ -5,6 +5,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const CreateCharacter = ({ onCreated }) => {
   const [name, setName] = useState("");
+  const [anime, setAnime] = useState("");
   const [creator, setCreator] = useState("");
   const [personality, setPersonality] = useState("");
   const [speechStyle, setSpeechStyle] = useState("");
