@@ -53,7 +53,7 @@ const CreateCharacter = ({ onCreated }) => {
         description: "Karakter buatan user.",
         greeting,
         type: "custom",
-        avatar: `${name.toLowerCase().replace(/ /g, "_")}.png`
+        avatar: `${name.toLowerCase().replace(/ /g, "_")}.${avatar.name.split(".").pop().toLowerCase()}`, // Simpan nama file sesuai format
       };
 
       onCreated(newCharacter);
