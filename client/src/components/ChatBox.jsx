@@ -2,7 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import ChatMessages from './ChatMessages';
 import MessageInput from './MessageInput';
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import config from '../config'; // ✅ Import config.js
+
+const BASE_URL = config.BASE_URL;
 
 
 
@@ -30,10 +32,7 @@ function ChatBox({ character }) {
         const history = res.data.history || [];
 
         if (history.length === 0) {
-          // Greeting pertama kali
-          setMessages([
-            { from: 'bot', text: character.greeting, emotion: 'neutral' }
-          ]);
+          setMessages([{ from: 'bot', text: character.greeting, emotion: 'neutral' }]);
         } else {
           const formatted = history.flatMap(chat => [
             { from: 'user', text: chat.user_message },
@@ -50,7 +49,7 @@ function ChatBox({ character }) {
     if (character?.name) {
       fetchHistory();
     }
-  }, [character.name]);
+  }, [character?.name]);
 
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
@@ -86,8 +85,12 @@ function ChatBox({ character }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden" ref={scrollRef}>
-      <div className="flex-1 overflow-y-auto">
-        <ChatMessages messages={messages} isTyping={isTyping} />
+      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+        <ChatMessages
+          messages={messages}
+          isTyping={isTyping}
+          activeCharacter={character}
+        />
       </div>
       <div className="border-t border-gray-700 p-4 bg-[#121212]">
         <MessageInput onSend={handleSendMessage} character={character} />

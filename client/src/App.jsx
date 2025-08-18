@@ -5,9 +5,11 @@ import ChatBox from './components/ChatBox';
 import Footer from './components/Footer';
 import CharacterList from './components/CharacterList';
 import CreateCharacter from './components/CreateCharacter';
-const BASE_URL = import.meta.env.VITE_BASE_URL || "https://animeai-app-production.up.railway.app";
+import config from './config'; // ✅ Import config
 
-console.log("BASE_URL:", import.meta.env.VITE_BASE_URL);
+const BASE_URL = config.BASE_URL;
+
+console.log("BASE_URL:", BASE_URL);
 
 
 const App = () => {
@@ -26,11 +28,14 @@ const App = () => {
     const isSameCharacter = activeCharacter?.name === character.name;
     const isCustom = character.anime === 'Custom Character' || character.type === 'custom';
 
+    // Ambil hanya nama file, hilangkan semua prefix seperti '/avatars/' atau 'avatars/'
+    const cleanImageName = character.image?.replace(/^\/?avatars\//, '');
+
     const normalizedCharacter = {
       ...character,
       image: isCustom
-        ? character.image // sudah URL lengkap dari backend
-        : `/avatars/${character.image}` // untuk karakter default
+        ? `${BASE_URL}/avatars/${cleanImageName}` // custom ambil dari backend
+        : `/avatars/${cleanImageName}`           // default ambil dari public folder
     };
 
     if (!isSameCharacter) {
@@ -57,27 +62,30 @@ const App = () => {
   };
 
   const handleCreateCharacter = (newCharacter) => {
-    let imageUrl = newCharacter.avatar
-      ? `${BASE_URL}/avatars/${newCharacter.avatar}`
-      : "/avatars/default.png";
+  const cleanAvatarName = newCharacter.avatar
+    ?.replace(/^https?:\/\/[^/]+\/avatars\//, '')
+    ?.replace(/^\/?avatars\//, '');
 
-    // validasi manual juga boleh
-    if (!imageUrl.includes("http")) {
-      imageUrl = "/avatars/default.png";
-    }
+  const imageUrl = `${BASE_URL}/avatars/${cleanAvatarName || 'default.png'}`;
 
-    const characterWithImage = {
-      ...newCharacter,
-      image: imageUrl,
-      type: 'custom',
-    };
-
-    setCustomCharacters((prev) => [...prev, characterWithImage]);
-    setActiveCharacter(characterWithImage);
-    localStorage.setItem("last-character", JSON.stringify(characterWithImage));
-    localStorage.setItem("last-used", new Date().toISOString());
-    setViewMode("chat");
+  const characterWithImage = {
+    ...newCharacter,
+    image: imageUrl, // ✅ langsung simpan URL penuh supaya langsung muncul
+    type: 'custom',
   };
+
+  setCustomCharacters((prev) => {
+    const updated = [...prev, characterWithImage];
+    localStorage.setItem('chat-characters', JSON.stringify(updated));
+    return updated;
+  });
+
+  setActiveCharacter(characterWithImage);
+  localStorage.setItem("last-character", JSON.stringify(characterWithImage));
+  localStorage.setItem("last-used", new Date().toISOString());
+  setViewMode("chat");
+};
+
 
 
   const handleCharacterDeleted = (deletedName) => {
@@ -106,7 +114,7 @@ const App = () => {
         activeCharacter={activeCharacter}
         onCharacterSelect={handleCharacterSelect}
         customCharacters={customCharacters}
-        
+
       />
       <main className="flex flex-col h-screen flex-1 bg-[#121212]">
         {viewMode === 'chat' && activeCharacter && (

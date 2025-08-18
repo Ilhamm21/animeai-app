@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { characters as defaultCharacters } from './characters';
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import config from '../config'; // ✅ Import config.js
+
+const BASE_URL = config.BASE_URL;
 
 
 
@@ -14,33 +16,38 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
   }, []);
 
   const fetchCharacters = () => {
-  axios.get(`${BASE_URL}/characters`)
-    .then((res) => {
-      const custom = res.data.custom.map(char => ({
-        name: char.name,
-        anime: char.anime || 'Custom Character',
-        description: char.creator 
-          ? `Karakter buatan ${char.creator}.` 
-          : 'Karakter buatan user.',
-        image: char.avatar
-          ? `${BASE_URL}/avatars/${char.avatar}`
-          : `${BASE_URL}/avatars/default.png`,
-      }));
+    axios.get(`${BASE_URL}/characters`)
+      .then((res) => {
+        const custom = res.data.custom.map(char => ({
+          name: char.name.trim(),
+          anime: char.anime?.trim() || 'Tidak ada anime',
+          description: (char.personality || char.description)?.trim() || 'Tidak ada kepribadian',
+          avatar: char.avatar?.startsWith('http')
+            ? char.avatar
+            : `${BASE_URL}/avatars/${char.avatar || 'default.png'}`,
+          type: char.type || 'custom', // Penting supaya tombol hapus muncul
+        }));
 
         setCustomCharacters(custom);
       })
-
       .catch((err) => {
         console.error('Gagal mengambil karakter:', err);
       });
   };
 
+
+
+
   const handleDelete = (name) => {
-    if (window.confirm(`Hapus karakter "${name}"?`)) {
-      axios.delete(`${BASE_URL}/character/${encodeURIComponent(name)}`)
+    const cleanName = name.trim();
+
+    if (window.confirm(`Hapus karakter "${cleanName}"?`)) {
+      axios.delete(`${BASE_URL}/character`, {
+        params: { name: cleanName } // kirim lewat query parameter
+      })
         .then(() => {
-          setCustomCharacters(prev => prev.filter(c => c.name !== name));
-          onCharacterDeleted && onCharacterDeleted(name); // Hapus dari localStorage + sidebar
+          setCustomCharacters(prev => prev.filter(c => c.name !== cleanName));
+          onCharacterDeleted && onCharacterDeleted(cleanName);
         })
         .catch((err) => {
           console.error('Gagal menghapus karakter:', err);
@@ -48,6 +55,8 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
         });
     }
   };
+
+
 
   const combinedCharacters = [...customCharacters, ...defaultCharacters];
 
@@ -82,7 +91,7 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
           >
             <div className="flex space-x-4">
               <img
-                src={char.image}
+                src={char.avatar}
                 alt={char.name}
                 className="w-20 h-24 rounded-xl object-cover"
                 onError={(e) => {
@@ -95,13 +104,14 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
                 <div>
                   <p className="text-lg font-bold">{char.name}</p>
                   <p className="text-sm text-gray-400">Anime: {char.anime}</p>
-                  <p className="text-sm text-gray-400">Creator: {char.creator}</p>
                 </div>
-                <p className="text-sm text-gray-300 mt-2 break-words line-clamp-3">{char.description}</p>
+                <p className="text-sm text-gray-300 mt-2 break-words line-clamp-3">
+                  {char.description}
+                </p>
               </div>
             </div>
 
-            {char.anime === 'Custom Character' && (
+            {char.type === 'custom' && (
               <button
                 onClick={(e) => {
                   e.stopPropagation(); // Biar gak trigger select
@@ -115,6 +125,7 @@ const CharacterList = ({ onSelectCharacter, onCharacterDeleted }) => {
             )}
           </div>
         ))}
+
 
         {filteredCharacters.length === 0 && (
           <div className="text-gray-400 text-sm col-span-full text-center">

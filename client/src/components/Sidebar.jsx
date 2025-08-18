@@ -1,23 +1,48 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from 'react-icons/io'; // icon toggle
-const BASE_URL = import.meta.env.VITE_BASE_URL;
+import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from 'react-icons/io';
+import config from '../config';
 
-
-
+const BASE_URL = config.BASE_URL;
 
 const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter, onCharacterSelect }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [lastUsed, setLastUsed] = useState('');
   const [chatCharacters, setChatCharacters] = useState([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const dropdownRef = useRef();
 
-  useEffect(() => {
+  
+
+  // Fungsi untuk sync daftar karakter dari localStorage
+  const syncChatCharacters = () => {
     const saved = localStorage.getItem('chat-characters');
-    if (saved) setChatCharacters(JSON.parse(saved));
+    if (saved) {
+      try {
+        setChatCharacters(JSON.parse(saved));
+      } catch {
+        setChatCharacters([]);
+      }
+    } else {
+      setChatCharacters([]);
+    }
+  };
+
+  // Initial load & sync jika localStorage berubah (misalnya dari App.jsx)
+  useEffect(() => {
+    syncChatCharacters();
+
+    const handleStorageChange = (e) => {
+      if (e.key === 'chat-characters') {
+        syncChatCharacters();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Update last used & daftar karakter kalau activeCharacter berubah
   useEffect(() => {
     if (activeCharacter) {
       setLastUsed(new Date().toLocaleString());
@@ -28,7 +53,7 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
       if (!alreadyExists) {
         const updated = [...existing, activeCharacter];
         localStorage.setItem('chat-characters', JSON.stringify(updated));
-        setChatCharacters(updated);
+        setChatCharacters(updated); // langsung update state
       }
     }
   }, [activeCharacter]);
@@ -98,19 +123,19 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
           type="button"
           onClick={() => {
             onCreateClick();
-            setIsSidebarOpen(false); // Tutup sidebar setelah klik
+            setIsSidebarOpen(false);
           }}
           className="flex items-center space-x-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md px-3 py-2 text-white text-sm font-semibold mb-6 w-full"
         >
           <i className="fas fa-plus text-xs"></i>
-          <span>Create/Add Character</span>
+          <span>Add Character</span>
         </button>
 
         <button
           type="button"
           onClick={() => {
             onDiscoverClick();
-            setIsSidebarOpen(false); // Tutup sidebar setelah klik
+            setIsSidebarOpen(false);
           }}
           className="flex items-center space-x-2 text-gray-300 hover:text-white mb-6 text-sm font-semibold"
         >
@@ -135,28 +160,31 @@ const Sidebar = ({ onClearChat, onDiscoverClick, onCreateClick, activeCharacter,
                       localStorage.setItem('last-character', JSON.stringify(char));
                       localStorage.setItem('last-used', new Date().toISOString());
                       onCharacterSelect(char);
-                      setIsSidebarOpen(false); // Tutup setelah pilih
+                      setIsSidebarOpen(false);
                     }
                   }}
                 >
                   <div className="flex items-center space-x-2">
                     <img
                       src={
-                        // kalau char.image sudah URL lengkap, pakai itu
-                        char.image.startsWith('http')
-                          ? char.image
-                          // kalau cuma nama file, prefix BASE_URL
-                          : `${BASE_URL}/avatars/${char.image}`
+                        !char.avatar
+                          ? "/avatars/default.png"
+                          : char.avatar.startsWith("http")
+                            ? char.avatar
+                            : (() => {
+                              const cleanName = char.avatar.replace(/^\/?avatars\//, "");
+                              return char.type === "custom" || char.anime === "Custom Character"
+                                ? `${BASE_URL}/avatars/${cleanName}`
+                                : `/avatars/${cleanName}`;
+                            })()
                       }
                       alt={char.name}
                       className="w-6 h-6 rounded-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        // fallback image juga harus dari backend
-                        e.target.src = `${BASE_URL}/avatars/default.png`;
+                        e.target.src = "/avatars/default.png";
                       }}
                     />
-
                     <span className="truncate text-white text-sm">{char.name}</span>
                   </div>
                   <button

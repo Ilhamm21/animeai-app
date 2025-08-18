@@ -7,11 +7,32 @@ import os
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from flask import send_from_directory
+from utils.character_detector import detect_character_or_original
+from urllib.parse import unquote
+import re
+
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# Tentukan environment (default ke development)
+ENV = os.getenv("ENV", "development").lower()
+
+if ENV == "production":
+    allowed_origins = ["https://animeai-app.vercel.app"]
+else:
+    # Development → bebas akses dari localhost
+    allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+# Konfigurasi CORS
+CORS(
+    app,
+    resources={r"/*": {"origins": allowed_origins}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
 
 if not os.path.exists('avatars'):
     os.makedirs('avatars')
@@ -32,9 +53,6 @@ client_db = MongoClient(mongodb_uri)
 db = client_db.ai_chatbot  # Nama database
 chats_collection = db.chats  # Koleksi chat
 
-import os
-if not os.path.exists("./avatars"):
-    os.makedirs("./avatars")
 
 # API Key untuk OpenAI
 openai_key = os.getenv("OPENAI_API_KEY")
@@ -118,21 +136,6 @@ Jika pengguna menyoba meledek atau mengolok-olokmu, buatlah sedikit merosting ke
 Jika karakter didunianya memiliki sikap yang sangat serius, cuek, atau pendiam, sombong, pemarah dan sejenisnya. Ketika pengguna menanyakan hal yang tidak relevan menurut karakternya misal menanyakan soal percintaan atau hal-hal konyol lainnya, buatlah karakter tersebut menjawab dengan nada aneh atau sinis, misalnya "Apa itu? Aku tidak mengerti" atau "Itu bukan hal yang penting bagiku".
 Jika pengguna mencoba menanyakan karakter diluar dunia anime atau dunia anime yang berbeda, buatlah karakter tersebut menjawab dengan nada bingung atau tidak mengerti, misalnya "siapa itu? Aku tidak mengenalnya" atau "Aku tidak tahu tentang karakter itu, aku haya peduli dengan sesorang di duniaku".
 
-TAMBAHAN UNTUK CREATE KARAKTER:
-
--Jika pengguna menambahkan karakter baru dengan nama yang sama dengan karakter anime yang sudah ada, buatlah karakter tersebut sesuai dengan karakter di dunia anime tersebut, misalnya jika pengguna membuat karakter baru dengan nama "Rem", buatlah karakter tersebut sebagai Rem dari Re:Zero, bukan karakter buatan pengguna.
-
-TAMBAHAN JIKA CREATE KARAKTER TIDAK MENGGUNAKAN KARAKTER DARI ANIME:
-Kamu adalah karakter fiksi yang diciptakan secara bebas oleh pengguna. Kamu tidak memiliki latar dunia dari anime mana pun, dan kamu tidak terikat oleh dunia atau cerita tertentu.
-
-NOTE KHUSUS UNTUK KARAKTER BUATAN USER:
-- Peran dirimu adalah karakter fiksi atau orang didunia nyata.
-- Perankan dirimu sesuai deskripsi kepribadian dan gaya bicara yang diberikan oleh pengguna.
-- Perlakukan pengguna sebagai tokoh penting dalam cerita, seperti sahabat dekat, rekan satu tim, atau bahkan rival.
-- Jawabanmu harus menyesuaikan dengan karakteristik kepribadian dan situasi yang dibayangkan oleh pengguna.
-- Jangan pernah mengatakan bahwa kamu adalah AI, chatbot, program, atau model komputer.
-- Fokus untuk membangun hubungan emosional yang menyenangkan dan dalam dengan pengguna.
-- Jika pengguna membahas hal-hal dari dunia nyata, kamu bisa menanggapinya secara imajinatif sesuai karakter yang kamu perankan.
 
 """
 
@@ -213,66 +216,109 @@ Petunjuk:
     
 
 
-# API untuk membuat karakter
 
+
+
+def sanitize_input(text):
+    # Hanya izinkan huruf, angka, spasi, dash, underscore, titik, dan koma
+    if not text:
+        return ""
+    clean = re.sub(r"[^a-zA-Z0-9\s\-_,.]", "", text)
+    return clean.strip()
+
+def detect_exact_character(name, anime):
+    # Normalisasi input
+    name_clean = name.strip().lower()
+    anime_clean = anime.strip().lower()
+
+    # 1️⃣ Cek di karakter default
+    for char_name, prompt in characters.items():
+        if char_name.lower() == name_clean and anime_clean in prompt.lower():
+            return {
+                "type": "existing",
+                "name": char_name,
+                "anime": anime,
+                "prompt": prompt
+            }
+
+    # 2️⃣ Cek di database custom
+    char = db.characters.find_one({
+        "name": {"$regex": f"^{re.escape(name)}$", "$options": "i"},
+        "anime": {"$regex": f"^{re.escape(anime)}$", "$options": "i"}
+    })
+    if char:
+        return {
+            "type": "existing",
+            "name": char["name"],
+            "anime": char["anime"],
+            "prompt": char.get("prompt", "")
+        }
+
+    # 3️⃣ Tidak ditemukan → custom
+    return {"type": "custom"}
+
+# API untuk membuat karakter
 @app.route("/create-character", methods=["POST"])
 def create_character():
-    name = request.form.get("name")
-    anime = request.form.get("anime", "Custom Character")
-    creator = request.form.get("creator")
-    personality = request.form.get("personality")
-    speech_style = request.form.get("speechStyle")
-    greeting = request.form.get("greeting")
+    # Ambil data dari form dan sanitasi
+    name = sanitize_input(request.form.get("name"))
+    anime = sanitize_input(request.form.get("anime"))
+    personality = sanitize_input(request.form.get("personality"))
+    speech_style = sanitize_input(request.form.get("speechStyle"))
+    greeting = sanitize_input(request.form.get("greeting"))
     avatar_file = request.files.get("avatar")
 
+    # Validasi wajib ada semua
+    if not anime or anime.lower() == "custom character":
+        return jsonify({"error": "Field 'anime' wajib diisi dan tidak boleh 'Custom Character'."}), 400
+
     if not name or not personality or not speech_style or not greeting or not avatar_file:
-        return jsonify({"error": "Semua field wajib diisi kecuali kreator!"}), 400
+        return jsonify({"error": "Semua field wajib diisi."}), 400
 
-    # Cek duplikasi nama karakter
-    if db.characters.find_one({"name": name}):
-        return jsonify({"error": "Karakter dengan nama ini sudah ada."}), 400
+    # 🔍 Deteksi karakter berdasarkan nama + anime
+    detection_result = detect_exact_character(name, anime)
+    if detection_result["type"] == "existing":
+        return jsonify({"error": f"Karakter '{name}' dari anime '{anime}' sudah ada."}), 400
 
-    # Ambil ekstensi asli dan buat nama file aman
+    # Simpan file avatar
     ext = os.path.splitext(avatar_file.filename)[1]
     filename_raw = f"{name.lower().replace(' ', '_')}{ext}"
     filename = secure_filename(filename_raw)
-
-    # Pastikan folder avatars/ ada
     os.makedirs("avatars", exist_ok=True)
-
-    # Simpan avatar
     avatar_file.save(os.path.join("avatars", filename))
 
-    # Prompt format
-    prompt = f"""{name} adalah karakter yang memiliki kepribadian sebagai berikut:
+    # Simpan ke DB
+    db.characters.insert_one({
+        "name": name,
+        "anime": anime,
+        "personality": personality,
+        "speech_style": speech_style,
+        "greeting": greeting,
+        "avatar": filename,
+        "prompt": f"""{name} adalah karakter dari anime {anime} yang memiliki kepribadian sebagai berikut:
 {personality}
 
 Gaya bicaranya:
 {speech_style}
 
 NOTE: Jangan pernah keluar dari karakter."""
-
-    # Simpan ke DB
-    db.characters.insert_one({
-        "name": name,
-        "anime": anime,
-        "creator": creator,
-        "prompt": prompt,
-        "greeting": greeting,
-        "avatar": filename
     })
 
     return jsonify({
         "message": "Karakter berhasil dibuat!",
         "character": {
             "name": name,
-            "anime": "Custom Character",
+            "anime": anime,
             "description": personality,
+            "personality": personality, 
             "greeting": greeting,
             "type": "custom",
-            "avatar": filename  # ini penting agar frontend tahu nama file yg benar
+            "avatar": filename
         }
     }), 200
+
+
+
 
 
 # Ambil karakter buatan user dari database jika tidak ditemukan di karakter default
@@ -283,17 +329,22 @@ def get_character_prompt(character_name):
     custom_char = db.characters.find_one({"name": character_name})
     return custom_char["prompt"] if custom_char else characters["Rem"]
 
-# Menampilkan daftar karakter yang tersedia
 # Menampilkan daftar karakter yang tersedia (tanpa NOTE global)
 @app.route("/characters", methods=["GET"])
 def list_characters():
-    # Ambil karakter default
+    # Karakter default
     default_characters = list(characters.keys())
-    
-    # Ambil karakter custom dari database MongoDB
-    custom_characters = list(db.characters.find({}, {"_id": 0, "name": 1, "creator": 1, "avatar": 1}))
 
-    # Format response agar frontend bisa tahu mana custom dan mana default
+    # Karakter custom dari MongoDB
+    custom_characters = list(db.characters.find({}, {
+        "_id": 0,
+        "name": 1,
+        "creator": 1,
+        "avatar": 1,
+        "anime": 1,
+        "personality": 1
+    }))
+
     response = {
         "default": [{"name": name, "type": "default"} for name in default_characters],
         "custom": [
@@ -301,12 +352,14 @@ def list_characters():
                 "name": c["name"],
                 "type": "custom",
                 "creator": c.get("creator", "unknown"),
-                "avatar": c.get("avatar", None)
+                "avatar": c.get("avatar", None),
+                "anime": c.get("anime", "Tidak ada anime"),
+                "personality": c.get("personality", "Tidak ada kepribadian")
             }
             for c in custom_characters
         ]
     }
-    
+
     return jsonify(response)
 
 # API untuk mengambil riwayat chat
@@ -330,30 +383,22 @@ def get_character_chat_history(user_id, character):
     return jsonify({"history": history})
 
 # API untuk menghapus karakter buatan user
-@app.route("/character/<name>", methods=["DELETE"])
-def delete_character(name):
-    # Cari karakter custom di database
-    character = db.characters.find_one({"name": name})
-    if not character:
-        return jsonify({"error": f"Karakter '{name}' tidak ditemukan atau bukan karakter custom."}), 404
 
-    # Hapus data karakter dari database
+
+from bson.regex import Regex
+
+@app.route('/character', methods=['DELETE'])
+def delete_character():
+    name = request.args.get('name')
+    if not name:
+        return jsonify({"error": "Name parameter is required"}), 400
+
     result = db.characters.delete_one({"name": name})
+    if result.deleted_count == 0:
+        return jsonify({"error": "Character not found"}), 404
 
-    # Jika karakter ditemukan dan berhasil dihapus
-    if result.deleted_count > 0:
-        # Hapus file avatar jika ada
-        avatar_filename = character.get("avatar")
-        avatar_path = os.path.join("avatars", avatar_filename)
-        if avatar_filename and os.path.exists(avatar_path):
-            os.remove(avatar_path)
-            print(f"🗑️ Avatar '{avatar_filename}' berhasil dihapus.")
-        else:
-            print(f"⚠️ Avatar '{avatar_filename}' tidak ditemukan atau sudah dihapus sebelumnya.")
+    return jsonify({"message": "Character deleted successfully"}), 200
 
-        return jsonify({"message": f"Karakter '{name}' dan avatar-nya berhasil dihapus."})
-    else:
-        return jsonify({"error": f"Gagal menghapus karakter '{name}'."}), 500
 
 
 from flask import send_file, abort
@@ -403,9 +448,11 @@ def delete_chat_history(user_id, character):
 
 
 
+# if __name__ == "__main__":
+#     port = int(os.environ.get("PORT", 5000))
+#     app.run(debug=False, host="0.0.0.0", port=port)
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
-
-
+    app.run(debug=(ENV == "development"), host="0.0.0.0", port=port)
 
